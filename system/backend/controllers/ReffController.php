@@ -1,0 +1,164 @@
+<?php
+
+namespace backend\controllers;
+
+use Yii;
+use yii\filters\VerbFilter;
+use backend\models\UserType;
+use backend\models\UserLevel;
+use backend\models\Branch;
+use backend\models\CitizensAssociation;
+use backend\models\Customer;
+use backend\models\NeighborhoodAssociation;
+
+class ReffController extends \yii\web\Controller
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => \yii\filters\AccessControl::className(),
+                'ruleConfig' => [
+                'class' => \common\components\AccessRule::className()],
+                'rules' => \common\components\AccessRule::getRules(),
+            ],
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeAction($action)
+    {
+        /* Application Log */
+        Yii::$app->application->log($action->id);
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+        // Another code here
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function afterAction($action, $result)
+    {
+        $result = parent::afterAction($action, $result);
+        // Code here
+        return $result;
+    }
+    
+    public function actionIndex()
+    {
+        return $this->render('index');
+    }
+
+    public function actionUserType($code)
+    {
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $callback = [
+            'status' => false, 
+            'message' => 'Unknown Error'
+        ];
+
+        if ($code)
+        {
+            $callback['status']  = true;
+            $callback['message'] = 'Success';
+
+            $user_level = UserLevel::find()->where(['type' => $code])->asArray()->all();
+
+            switch ($code) 
+            {
+                case 'B':
+                    $data_code = Branch::find()->asArray()->all();
+                    break;
+
+                case 'C':
+                    $data_code = Customer::find()->asArray()->all();
+                    break;
+
+                default:
+                    $data_code = [];
+                    break;
+            }
+            $callback['data_level'] = $user_level;
+            $callback['data_code']  = $data_code;
+        }
+
+        return $callback;
+        
+        // return json_encode($callback);
+    }
+
+    public function actionCitizens($type, $id)
+    {
+        $citizens = "<option value=''>-</option>";
+        $neighborhood  = "<option value=''>-</option>";
+
+        if ($type === 'C')
+        {
+            $model = NeighborhoodAssociation::find()->where(['citizens_association_id' => $id])->asArray()->all();
+            foreach ($model as $key => $value) 
+            {
+                $neighborhood.= '<option value="' . $value['id'] . '">' . $value['name'] . '</option>';
+            }
+        }
+
+        return json_encode(array(
+            'citizens' => $citizens,
+            'neighborhood' => $neighborhood,
+            )
+        );
+    }
+
+    public function actionLocation($type, $name)
+    {
+	    $province = "<option value=''>-</option>";
+	    $city     = "<option value=''>-</option>";
+	    $district = "<option value=''>-</option>";
+
+    	if ($type === 'P')
+    	{
+	    	$model = MrLocation::find()->where(['province_name' => $name])->groupBy(['city_name'])->asArray()->all();
+	    	
+	    	foreach ($model as $key => $value) 
+	    	{
+	    		$city.= '<option value="' . $value['city_name'] . '">' . $value['city_name'] . '</option>';
+	    	}
+    	}
+    	else if ($type === 'C')
+    	{
+	    	$model = MrLocation::find()->where(['city_name' => $name])->groupBy(['district_name'])->asArray()->all();
+	    	
+	    	foreach ($model as $key => $value) 
+	    	{
+	    		$district.= '<option value="' . $value['district_name'] . '">' . $value['district_name'] . '</option>';
+	    	}
+
+    	}
+    	else if ($type === 'D')
+    	{
+
+    	}
+
+    	return json_encode(array(
+    			'province' => $province,
+    			'city' => $city,
+    			'district' => $district,
+    		)
+    	);
+    }
+
+}
