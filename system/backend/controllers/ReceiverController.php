@@ -239,28 +239,43 @@ class ReceiverController extends Controller
 
     public function actionScanner()
     {
-        // code ...
-    }
+        $barcodeNumber = Yii::$app->request->get('barcode');
 
-    public function actionIndexVictimRecipient()
-    {
-        $searchModel = new ReceiverSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $receiver = Receiver::find()->where(['barcode_number' => $barcodeNumber])->one();
 
-        return $this->render('index_victim_recipient', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
+        if ($barcodeNumber !== null && isset($barcodeNumber)) {
+
+            if ($receiver !== null) {
+                // claim coupon update status
+                $receiver->user_id = Yii::$app->user->identity->id;
+                $receiver->status = Receiver::CLAIM;
+                $receiver->status_update = date('Y-m-d H:i:s');
+                $receiver->save(false);
+
+                // show data
+                $receiverData = array(
+                    'data' => array (
+                        'id'  => $receiver['id'],
+                        'barcode_number'  => $receiver['barcode_number'],
+                        'name'  => $receiver['name'] ? $receiver['name'] : null,
+                        'desc'  => $receiver['desc'] ? $receiver['desc'] : null,
+                        'registration_year'  => $receiver['registration_year'] ? $receiver['registration_year'] : null,
+                        'status' => $receiver['status'] ? $receiver->getStatus() : null,
+                        'status_update' => $receiver['status_update'],
+                        'receiver_type_id' => $receiver->receiverType ? $receiver->receiverType->name : null,
+                        'receiver_class_id' => $receiver->receiverClass ? $receiver->receiverClass->name : null,
+                        'user_id' => $receiver->user ? $receiver->user->name : null,
+                        'branch_code' => $receiver->branch ? $receiver->branch->bch_name : null,
+                        'citizens_association_id' => $receiver->citizens ? $receiver->citizens->name : null,
+                        'neighborhood_association_id' => $receiver->neighborhood ? $receiver->neighborhood->name : null,
+                    ),
+                );
+            }
+        }
+
+        return $this->render('scanner', [
+            'receiver' => $receiver ? $receiverData : null,
         ]);
     }
-    
-    public function actionIndexCharityRecipient()
-    {
-        $searchModel = new ReceiverSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        return $this->render('index_charity_recipient', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
-    }
 }

@@ -8,6 +8,7 @@ use backend\models\ReceiverClass;
 use backend\models\User;
 use backend\models\CitizensAssociation;
 use backend\models\NeighborhoodAssociation;
+use yii\helpers\Html;
 
 /**
  * This is the model class for table "receiver".
@@ -102,6 +103,11 @@ class Receiver extends \yii\db\ActiveRecord
         return $this->hasOne(NeighborhoodAssociation::class, ['id' => 'neighborhood_association_id']);
     }
 
+    public function getBranch()
+    {
+        return $this->hasOne(Branch::class, ['code' => 'branch_code']);
+    }
+
     public function generateRunningNumberByBranchAndType($receiverType, $branch)
     {
         $queryBarcode = Receiver::find()
@@ -117,5 +123,27 @@ class Receiver extends \yii\db\ActiveRecord
             $running_number = str_pad($queryBarcode, $code_digit, '0', STR_PAD_LEFT);
             return $running_number;
         }
+    }
+
+    public function getStatus()
+    {
+        $status = null;
+
+        $actionStatus = null;
+
+        if ($actionStatus){
+            $data = $actionStatus;
+        } else{
+            $data = $this->status;
+        }
+
+        if ($data == Receiver::NOT_CLAIM){
+            $status = Html::a(Yii::t('app', 'not_claimed'), null, ['class' => 'btn btn-danger btn-sm disable', 'style' => 'color:white']);
+        }
+        elseif ($data == Receiver::CLAIM) {
+            $status = Html::a(Yii::t('app', 'already_claimed'), null, ['class' => 'btn btn-secondary btn-sm disable', 'style' => 'color:white']);
+        }
+
+        return $status;
     }
 }

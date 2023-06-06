@@ -5,6 +5,7 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use backend\models\Receiver;
+use Yii;
 
 /**
  * ReceiverSearch represents the model behind the search form of `backend\models\Receiver`.
@@ -40,7 +41,18 @@ class ReceiverSearch extends Receiver
      */
     public function search($params)
     {
-        $query = Receiver::find()->with('receiverType');
+        if (Yii::$app->user->identity->level == '26095f283a02924562378b7d7c28162e'
+            || Yii::$app->user->identity->level == '7968a93c1b259584d917d009a7a6923a') 
+        { // superadmin
+            $query = Receiver::find()
+                    ->with('receiverType')
+                    ->where(['branch_code' => Yii::$app->user->identity->code]);
+        } else {
+            $query = Receiver::find()
+                    ->with('receiverType')
+                    ->where(['branch_code' => Yii::$app->user->identity->code])
+                    ->andWhere(['user_id' => Yii::$app->user->identity->id]);
+        }
 
         // add conditions that should always apply here
 

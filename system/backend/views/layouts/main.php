@@ -182,11 +182,11 @@ AppAsset::register($this);
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="<?=Url::base()?>" class="brand-link">
-      <img src="<?=Url::base()?>/dist/img/Yii2WebappsLogo.png"
+      <img src="<?=Url::base()?>/dist/img/logo_ica.jpg"
            alt="Yii2 Webapps Logo"
            class="brand-image img-circle elevation-3"
            style="opacity: .8">
-      <span class="brand-text font-weight-light">Yii2 Webapps</span>
+      <span class="brand-text font-weight-light"><?= Yii::t('app', 'ica_apps') ?></span>
     </a>
 
     <!-- Sidebar -->
