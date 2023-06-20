@@ -4,7 +4,6 @@ use yii\helpers\Url;
 use yii\helpers\Html;
 use yii\helpers\ArrayHelper;
 use yii\widgets\ActiveForm;
-use kartik\dialog\Dialog;
 use kartik\select2\Select2;
 use backend\models\UserLevel;
 use backend\models\UserAccess;
@@ -44,7 +43,7 @@ $select_level = ArrayHelper::map(UserLevel::find()->asArray()->all(), function($
 		        'data' => $select_level,
 		        'disabled' => $model->isNewRecord ? false : true,
 		        'options' => [
-		            'placeholder' => 'Pilih Level',
+		            'placeholder' => Yii::t('app', 'select_level'),
 		            'value' => $id_level,
 		        ],
 		        'pluginOptions' => [
@@ -60,7 +59,7 @@ $select_level = ArrayHelper::map(UserLevel::find()->asArray()->all(), function($
 		        'data' => ['app-backend-webapps' => 'app-backend-webapps', 
 		        			'app-frontend-webapps' => 'app-frontend-webapps'],
 		        'options' => [
-		            'placeholder' => 'Pilih Module',
+		            'placeholder' => Yii::t('app', 'select_module'),
 		            'value' => $id_module,
 		        ],
 		        'pluginOptions' => [
@@ -76,12 +75,12 @@ $select_level = ArrayHelper::map(UserLevel::find()->asArray()->all(), function($
 				<label class="control-label" for="check-button">&nbsp;</label>
 				<div class="btn-group-justified" role="group" aria-label="...">
 					<div class="btn-group" role="group">
-						<button id="load-button" class="btn btn-success">Load</button>
+						<button id="load-button" class="btn btn-success"><?= Yii::t('app', 'load') ?></button>
 					</div>
 					<div class="btn-group">
 						<div class="dropdown">
 							<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-							CHECK
+							<?= Yii::t('app', 'check') ?>
 							</button>
 							<ul class="dropdown-menu">
 								<li class="dropdown-item">
@@ -176,8 +175,8 @@ $select_level = ArrayHelper::map(UserLevel::find()->asArray()->all(), function($
 								if (isset($access['action']) && is_null($access['action']) == false)
 								{
 									$auth = \yii\helpers\BaseJson::decode($access['action'], true);
-
-									if (isset($auth[$value]))
+									
+									if (isset($auth[$value]) && $auth[$value] === true)
 									{
 										echo 'value="1" checked';
 									}
@@ -210,7 +209,7 @@ $select_level = ArrayHelper::map(UserLevel::find()->asArray()->all(), function($
 		    <?= $form->field($model, 'action')->hiddenInput(['rows' => 6])->label(false) ?>
 
 		    <div class="form-group">
-		    	<?= Html::submitButton($model->isNewRecord ? 'Simpan' : 'Update', ['id' =>'action-save', 'class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+		    	<?= Html::submitButton($model->isNewRecord ? Yii::t('app', 'save') : Yii::t('app', 'update'), ['id' =>'action-save', 'class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
 		    </div>
 
 		</div>

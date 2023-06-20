@@ -8,6 +8,7 @@ use backend\models\BranchSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 /**
  * BranchController implements the CRUD actions for Branch model.
@@ -96,7 +97,20 @@ class BranchController extends Controller
     {
         $model = new Branch();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+
+            $image = UploadedFile::getInstance($model, 'bch_image');
+
+            if ($image)
+            {
+                $file = Yii::$app->params['upload'] . 'branch/' . $model->bch_name . '.' . $image->extension;
+                $path = Yii::getAlias('@webroot') . $file;
+                $image->saveAs($path);
+                $model->bch_image = $file;
+            }
+
+            $model->save();
+
             return $this->redirect(['view', 'id' => $model->code]);
         }
 
@@ -116,7 +130,26 @@ class BranchController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            
+            $image = UploadedFile::getInstance($model, 'bch_image');
+
+            if ($image)
+            {
+                $file = Yii::$app->params['upload'] . 'branch/' . $model->bch_name . '.' . $image->extension;
+                $path = Yii::getAlias('@webroot') . $file;
+                $image->saveAs($path);
+                $model->bch_image = $file;
+            }
+
+            else
+            {
+                $path = $this->findModel($id);
+                $model->bch_image = $path->bch_image;
+            }
+
+            $model->save();
+
             return $this->redirect(['view', 'id' => $model->code]);
         }
 

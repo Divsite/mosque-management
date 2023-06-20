@@ -5,8 +5,8 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\Branch */
 
-$this->title = 'Create Branch';
-$this->params['breadcrumbs'][] = ['label' => 'Branches', 'url' => ['index']];
+$this->title = Yii::t('app', 'create_branch');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'branch'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">

@@ -21,7 +21,6 @@ use yii\helpers\Html;
  * @property int|null $citizens_association_id
  * @property int|null $neighborhood_association_id
  * @property string|null $registration_year
- * @property int|null $qty
  * @property string|null $barcode_number
  * @property int|null $status
  * @property string|null $timestamp
@@ -44,13 +43,14 @@ class Receiver extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['receiver_type_id'], 'required'],
-            [['receiver_type_id', 'receiver_class_id', 'user_id', 'citizens_association_id', 'neighborhood_association_id', 'qty', 'status'], 'integer'],
+            [['receiver_type_id', 'citizens_association_id', 'neighborhood_association_id'], 'required'],
+            [['receiver_type_id', 'receiver_class_id', 'user_id', 'citizens_association_id', 'neighborhood_association_id', 'status', 'resident_id'], 'integer'],
             [['desc'], 'string'],
             [['registration_year', 'status_update', 'timestamp'], 'safe'],
-            [['name', 'barcode_number'], 'string', 'max' => 255],
+            [['barcode_number'], 'string', 'max' => 255],
             [['branch_code'], 'string', 'max' => 50],
             ['status_update', 'datetime', 'format' => 'php:Y-m-d H:i:s'],
+            ['clock', 'time', 'format' => 'php:H:i', 'message' => 'Invalid time format.'],
         ];
     }
 
@@ -68,12 +68,13 @@ class Receiver extends \yii\db\ActiveRecord
             'citizens_association_id' => Yii::t('app', 'citizens_association_id'),
             'neighborhood_association_id' => Yii::t('app', 'neighborhood_association_id'),
             'registration_year' => Yii::t('app', 'registration_year'),
-            'qty' => Yii::t('app', 'qty'),
             'barcode_number' => Yii::t('app', 'barcode_number'),
             'status' => Yii::t('app', 'status'),
             'status_update' => Yii::t('app', 'status_update'),
+            'clock' => Yii::t('app', 'clock'),
             'user_id' => Yii::t('app', 'user_id'),
             'branch_code' => Yii::t('app', 'branch_code'),
+            'resident_id' => Yii::t('app', 'resident_id'),
             'timestamp' => Yii::t('app', 'timestamp'),
         ];
     }
@@ -145,5 +146,34 @@ class Receiver extends \yii\db\ActiveRecord
         }
 
         return $status;
+    }
+    
+    public static function getClaimStatusCouponByBranch() : int 
+    {
+        return static::find()
+                ->where([
+                    'branch_code' => Yii::$app->user->identity->code,
+                    'status' => Receiver::CLAIM
+                ])
+                ->count();
+    }
+    
+    public static function getNotClaimStatusCouponByBranch() : int 
+    {
+        return static::find()
+                ->where([
+                    'branch_code' => Yii::$app->user->identity->code,
+                    'status' => Receiver::NOT_CLAIM
+                ])
+                ->count();
+    }
+    
+    public static function getTotalCouponByBranch() : int 
+    {
+        return static::find()
+                ->where([
+                    'branch_code' => Yii::$app->user->identity->code,
+                ])
+                ->count();
     }
 }

@@ -5,8 +5,8 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\Customer */
 
-$this->title = 'Create Customer';
-$this->params['breadcrumbs'][] = ['label' => 'Customers', 'url' => ['index']];
+$this->title = Yii::t('app', 'create_customer');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'customer'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">

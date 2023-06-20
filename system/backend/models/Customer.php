@@ -53,11 +53,11 @@ class Customer extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'code' => 'Code',
-            'code_branch' => 'Code Branch',
-            'cus_type' => 'Type',
-            'cus_name' => 'Name',
-            'cus_address' => 'Address',
+            'code' => Yii::t('app', 'code'),
+            'code_branch' => Yii::t('app', 'branch_code'),
+            'cus_type' => Yii::t('app', 'customer_type'),
+            'cus_name' => Yii::t('app', 'customer_name'),
+            'cus_address' => Yii::t('app', 'address'),
         ];
     }
 

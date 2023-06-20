@@ -10,9 +10,9 @@ use backend\models\UserType;
 /* @var $searchModel backend\models\UserSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Users';
-$this->params['page_title'] = 'Index';
-$this->params['page_desc'] = 'User Index';
+$this->title = Yii::t('app', 'user');
+$this->params['page_title'] = Yii::t('app', 'index');
+$this->params['page_desc'] = Yii::t('app', 'user_index');
 $this->params['breadcrumbs'][] = $this->title;
 
 $select_level = ArrayHelper::map(UserLevel::find()->asArray()->all(), function($model, $defaultValue) {
@@ -49,7 +49,7 @@ $select_type = ArrayHelper::map(UserType::find()->asArray()->all(),'code', funct
         <div class="card-body">
 
             <p>
-                <?= Html::a('Create User', ['create'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a(Yii::t('app', 'create_user'), ['create'], ['class' => 'btn btn-success']) ?>
             </p>
 
             <?php // echo $this->render('_search', ['model' => $searchModel]); ?>

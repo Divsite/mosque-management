@@ -1,7 +1,7 @@
 <?php
 namespace common\models;
 
-use backend\models\Division;
+use backend\models\UserAccess;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
@@ -211,8 +211,49 @@ class User extends ActiveRecord implements IdentityInterface
         $this->password_reset_token = null;
     }
 
-    public function getDivision()
+    public function can($permissionName, $params = [], $allowCaching = true)
     {
-        return $this->hasOne(Division::class, ['id' => 'division_id']);
+        // Mendapatkan controller saat ini
+        $controller = Yii::$app->controller->id;
+
+        // Mendapatkan larik izin dari model UserAccess
+        $permissions = $this->getPermissions($controller);
+
+        if (isset($permissions[$permissionName]) && $permissions[$permissionName]) {
+            return true;
+        } else {
+            return false;
+        }
+
+        // Jika izin tidak ada dalam larik izin, lanjutkan dengan pemeriksaan RBAC default
+        return parent::can($permissionName, $params, $allowCaching);
     }
+
+    public function getPermissions($controller)
+    {
+        $permissions = [];
+
+        // Mendapatkan level pengguna yang login
+        $level = Yii::$app->user->identity->level;
+
+        // Mengambil data izin dari tabel user_access berdasarkan level pengguna yang login
+        $userAccesses = UserAccess::find()->where(['level' => $level, 'controller' => $controller])->all();
+
+        // Melakukan iterasi pada setiap baris data izin
+        foreach ($userAccesses as $userAccess) {
+            // Mendapatkan kolom 'action' yang berisi izin dalam format JSON
+            $action = $userAccess->action;
+            
+            // Mengubah JSON menjadi array asosiatif
+            $permissionArray = json_decode($action, true);
+            
+            // Menggabungkan array izin ke dalam larik $permissions
+            $permissions = array_merge($permissions, $permissionArray);
+        }
+
+        // Menghapus duplikat izin dan mengembalikan larik izin yang unik
+        return $permissions;
+    }
+
+
 }

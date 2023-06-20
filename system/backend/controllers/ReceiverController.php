@@ -7,8 +7,8 @@ use backend\models\Receiver;
 use backend\models\ReceiverSearch;
 use backend\models\ReceiverType;
 use backend\models\Branch;
-use backend\models\CitizensAssociation;
-use backend\models\NeighborhoodAssociation;
+// use backend\models\CitizensAssociation;
+// use backend\models\NeighborhoodAssociation;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -100,25 +100,26 @@ class ReceiverController extends Controller
     {
         $model = new Receiver();
 
+        $qty = Yii::$app->request->post('qty');
+        
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
 
+            // var_dump($model->clock);
+            // die;
+            
             // declare
             $receiverType = ReceiverType::find()->where(['id' => $model->receiver_type_id])->one();
             $branch = Branch::find()->where(['code' => Yii::$app->user->identity->code])->one();
-            $citizensAssociation = CitizensAssociation::find()->where(['id' => $model->citizens_association_id])->one();
-            $neighborhoodAssociation = NeighborhoodAssociation::find()->where(['id' => $model->neighborhood_association_id])->one();
-            $registrationYear = $model->registration_year;
+            // $citizensAssociation = CitizensAssociation::find()->where(['id' => $model->citizens_association_id])->one();
+            // $neighborhoodAssociation = NeighborhoodAssociation::find()->where(['id' => $model->neighborhood_association_id])->one();
+            $registrationYear = date('Y');
 
             if ($model->receiver_type_id == ReceiverType::ZAKAT) {
 
                 $barcodeNumberResult = $receiverType->code .'-'.  
                 $branch->code . '-' . 
-                $citizensAssociation->name .'-'. 
-                $neighborhoodAssociation->name . '-' . 
-                $registrationYear .'-'.
                 $model->generateRunningNumberByBranchAndType($receiverType, $branch);
 
-                $model->qty = null;
                 $model->barcode_number = $barcodeNumberResult;
                 $model->save(false);
             }
@@ -127,15 +128,12 @@ class ReceiverController extends Controller
             if ($model->receiver_type_id == ReceiverType::SACRIFICE) {
 
                 // generate barcode function
-                for ($x=0; $x < $model->qty; $x++)
+                for ($x=0; $x < $qty; $x++)
                 {
                     $receiver = new Receiver();
 
                     $barcodeNumberResult = $receiverType->code .'-'.  
                             $branch->code . '-' . 
-                            $citizensAssociation->name .'-'. 
-                            $neighborhoodAssociation->name . '-' . 
-                            $registrationYear .'-'.
                             $model->generateRunningNumberByBranchAndType($receiverType, $branch);
                     
                     $receiver->barcode_number = $barcodeNumberResult;
@@ -147,6 +145,7 @@ class ReceiverController extends Controller
                     $receiver->neighborhood_association_id = $model->neighborhood_association_id;
                     $receiver->status = Receiver::NOT_CLAIM;
                     $receiver->status_update = date('Y-m-d H:i:s');
+                    $receiver->clock = $model->clock;
                     
                     $receiver->save(false);
                 }
@@ -184,6 +183,7 @@ class ReceiverController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'qty' => $qty,
         ]);
     }
 
@@ -239,7 +239,7 @@ class ReceiverController extends Controller
 
     public function actionScanner()
     {
-        $barcodeNumber = Yii::$app->request->get('barcode');
+        $barcodeNumber = Yii::$app->request->get('number');
 
         $receiver = Receiver::find()->where(['barcode_number' => $barcodeNumber])->one();
 
@@ -276,6 +276,78 @@ class ReceiverController extends Controller
         return $this->render('scanner', [
             'receiver' => $receiver ? $receiverData : null,
         ]);
+    }
+
+    public function actionPrintReceiverBarcode() {
+        return $this->render('print_receiver_barcode');
+    }
+
+    public function actionEditCouponStatus($id, $status)
+    {
+        $model = $this->findModel($id); // receiver id
+
+        $model->status = $status;
+        
+        if ($model->save(false)) {
+            Yii::$app->getSession()->setFlash('receiver_status_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'system_information'),
+                'message'  => Yii::t('app', 'coupon_success_claimed'),
+            ]);
+            return $this->redirect(['index']);
+        }
+        else
+        {
+            if ($model->errors)
+            {
+                $message = "";
+                foreach ($model->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2;
+                    }
+                }
+                Yii::$app->getSession()->setFlash('receiver_status_failed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
+        }
+    }
+
+    public function actionDeleteAll()
+    {
+        
+        $delete = Receiver::deleteAll();
+
+        if ($delete)
+        {
+            Yii::$app->getSession()->setFlash(Yii::t('app', 'delete_success'), [
+                    'type'     => 'success',
+                    'duration' => 5000,
+                    'title'    => 'System Information',
+                    'message'  => Yii::t('app', 'delete_success'),
+                ]
+            );
+            return $this->redirect(['index']);
+        } else {
+            Yii::$app->getSession()->setFlash(Yii::t('app', 'data_not_found'), [
+                'type'     => 'error',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'error'),
+                'message'  => Yii::t('app', 'data_not_found'),
+            ]
+        );
+            return $this->redirect(['index']);
+        }
+    }
+
+    public function actionReport()
+    {
+        
     }
 
 }

@@ -9,8 +9,8 @@ use kartik\datetime\DateTimePicker;
 /* @var $searchModel backend\models\AppLogdSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'App Logds';
-$this->params['page_title'] = 'Index';
+$this->title = Yii::t('app', 'app_log_database');
+$this->params['page_title'] = Yii::t('app', 'index');
 $this->params['page_desc'] = $this->title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -37,12 +37,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         <div class="col-lg-3">
 
                             <div class="form-group">
-                                <?= Html::label('Datetime Log', 'timestamp', ['class' => 'control-label']) ?>
+                                <?= Html::label(Yii::t('app', 'date_time_log'), 'timestamp', ['class' => 'control-label']) ?>
                                 <?= DateTimePicker::widget(['id' => 'timestamp',
                                     'name' => 'timestamp',
                                     'value' => date('Y-m-d 23:59:59'),
                                     'options' => [
-                                        'placeholder'  => 'Tanggal Log',
+                                        'placeholder'  => Yii::t('app', 'date_time_log'),
                                         'autocomplete' => 'off',
                                         'onchange' => ''
                                     ],
@@ -60,10 +60,10 @@ $this->params['breadcrumbs'][] = $this->title;
                             <div class="form-group">
                                 <?= Html::label('&nbsp;', '', ['class' => 'control-label']) ?>
                                 <div class="button-group">
-                                    <?= Html::a('<i class="feather icon-trash"></i> Clear Under', ['index', 'action' => 'clear'], [
+                                    <?= Html::a('<i class="feather icon-trash"></i>' . Yii::t('app', 'clear_all'), ['index', 'action' => 'clear'], [
                                         'class' => 'btn btn-danger clear',
                                         'data' => [
-                                            'confirm' => 'Are you sure you want to clear log ?',
+                                            'confirm' => Yii::t('app', 'are_you_sure_want_to_clear_all'),
                                             'method' => 'post',
                                         ],
                                     ]) ?>
@@ -93,7 +93,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             //'id',
                             [
-                                'label' => 'Username',
+                                'label' => Yii::t('app', 'username'),
                                 'attribute' => 'id_user',
                                 'value' => function ($data) {
                                     $user = \backend\models\User::findOne(['id' => $data['id_user']]);

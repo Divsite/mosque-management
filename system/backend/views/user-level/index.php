@@ -9,8 +9,8 @@ use backend\models\UserType;
 /* @var $searchModel backend\models\UserLevelSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'User Levels';
-$this->params['page_title'] = 'Index';
+$this->title = Yii::t('app', 'user_level');
+$this->params['page_title'] = Yii::t('app', 'user_level');
 $this->params['page_desc'] = $this->title;
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -38,7 +38,7 @@ $select_type = ArrayHelper::map(UserType::find()->asArray()->all(),'code', funct
             <div class="user-level-index">
 
                 <p>
-                    <?= Html::a('Create User Level', ['create'], ['class' => 'btn btn-success']) ?>
+                    <?= Html::a(Yii::t('app', 'create_user_level'), ['create'], ['class' => 'btn btn-success']) ?>
                 </p>
 
                 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>

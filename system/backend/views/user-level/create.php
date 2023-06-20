@@ -5,8 +5,8 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\UserLevel */
 
-$this->title = 'Create User Level';
-$this->params['breadcrumbs'][] = ['label' => 'User Levels', 'url' => ['index']];
+$this->title = Yii::t('app', 'create_user_level');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_level'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">

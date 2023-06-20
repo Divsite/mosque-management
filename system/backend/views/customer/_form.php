@@ -37,7 +37,7 @@ $select_branch = ArrayHelper::map(Branch::find()->asArray()->all(),'code', funct
     <?= $form->field($model, 'code_branch')->widget(Select2::classname(),[
             'data' => $select_branch,
             'options' => [
-                'placeholder' => 'Pilih Branch',
+                'placeholder' => Yii::t('app', 'select_branch'),
             ],
             'pluginOptions' => [
                 'allowClear' => false
@@ -48,7 +48,7 @@ $select_branch = ArrayHelper::map(Branch::find()->asArray()->all(),'code', funct
     <?= $form->field($model, 'cus_type')->widget(Select2::classname(),[
             'data' => ['AGENT' => 'AGENT', 'RETAIL' => 'RETAIL'],
             'options' => [
-                'placeholder' => 'Pilih Tipe Customer',
+                'placeholder' => Yii::t('app', 'select_type_customer'),
             ],
             'pluginOptions' => [
                 'allowClear' => false

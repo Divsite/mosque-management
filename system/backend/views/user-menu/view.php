@@ -7,7 +7,7 @@ use yii\widgets\DetailView;
 /* @var $model backend\models\UserMenu */
 
 $this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'User Menus', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_menu'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>

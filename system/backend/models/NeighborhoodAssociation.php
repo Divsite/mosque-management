@@ -16,6 +16,14 @@ use Yii;
  */
 class NeighborhoodAssociation extends \yii\db\ActiveRecord
 {
+    const RT1 = 1;
+    const RT2 = 2;
+    const RT3 = 3;
+    const RT4 = 4;
+    const RT5 = 5;
+    const RT6 = 6;
+    const PNT = 7;
+
     /**
      * {@inheritdoc}
      */
@@ -33,7 +41,7 @@ class NeighborhoodAssociation extends \yii\db\ActiveRecord
             [['citizens_association_id', 'name', 'responsible', 'telp'], 'required'],
             [['citizens_association_id'], 'integer'],
             [['timestamp'], 'safe'],
-            [['name', 'responsible', 'telp'], 'string', 'max' => 255],
+            [['name', 'responsible', 'telp', 'color'], 'string', 'max' => 255],
         ];
     }
 
@@ -48,7 +56,13 @@ class NeighborhoodAssociation extends \yii\db\ActiveRecord
             'name' => Yii::t('app', 'Name'),
             'responsible' => Yii::t('app', 'Responsible'),
             'telp' => Yii::t('app', 'Telp'),
+            'color' => Yii::t('app', 'Color'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
+    }
+
+    public function getManyReceiver()
+    {
+        return $this->hasMany(Receiver::class, ['neighborhood_association_id' => 'id']);
     }
 }

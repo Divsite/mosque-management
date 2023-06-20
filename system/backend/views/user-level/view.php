@@ -7,7 +7,7 @@ use yii\widgets\DetailView;
 /* @var $model backend\models\UserLevel */
 
 $this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'User Levels', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_level'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
@@ -27,12 +27,12 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-text">
             <div class="user-level-view">
                 <p>
-                    <?= Html::a('Create', ['create'], ['class' => 'btn btn-success']) ?>
-                    <?= Html::a('Update', ['update', 'id' => $model->code], ['class' => 'btn btn-primary']) ?>
-                    <?= Html::a('Delete', ['delete', 'id' => $model->code], [
+                    <?= Html::a(Yii::t('app', 'create_user_level'), ['create'], ['class' => 'btn btn-success']) ?>
+                    <?= Html::a(Yii::t('app', 'update_user_level'), ['update', 'id' => $model->code], ['class' => 'btn btn-primary']) ?>
+                    <?= Html::a(Yii::t('app', 'delete'), ['delete', 'id' => $model->code], [
                         'class' => 'btn btn-danger',
                         'data' => [
-                            'confirm' => 'Are you sure you want to delete this item?',
+                            'confirm' => Yii::t('app', 'are_you_sure_want_to_clear_all'),
                             'method' => 'post',
                         ],
                     ]) ?>

@@ -10,8 +10,8 @@ use backend\models\UserMenu;
 /* @var $searchModel backend\models\UserMenuSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'User Menus';
-$this->params['page_title'] = 'Index';
+$this->title = Yii::t('app', 'user_menu');
+$this->params['page_title'] = Yii::t('app', 'index');
 $this->params['page_desc'] = $this->title;
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -45,7 +45,7 @@ $fontawesome = ['fab fa-accessible-icon' => 'fa-accessible-icon', 'fab fa-accuso
         <div class="card-body">
 
             <p>
-                <?= Html::a('Create User Menu', ['create'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a(Yii::t('app', 'create_user_menu'), ['create'], ['class' => 'btn btn-success']) ?>
             </p>
 
             <?php // echo $this->render('_search', ['model' => $searchModel]); ?>

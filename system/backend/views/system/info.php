@@ -6,8 +6,8 @@ use kartik\dialog\Dialog;
 
 /* @var $this yii\web\View */
 
-$this->title = 'System Information';
-$this->params['page_title'] = 'Info';
+$this->title = Yii::t('app', 'system_information');
+$this->params['page_title'] = Yii::t('app', 'information');
 $this->params['page_desc'] = $this->title;
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -36,22 +36,22 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
 
 	                <div class="col-lg-12">
 
-	                    <h4>SERVER</h4>
+	                    <h4><?= Yii::t('app', 'server') ?></h4>
 
 	                    <div class="table-responsive">
 
 		                    <table class="table table-bordered table-server">
 		                        <tbody>
 		                            <tr>
-		                                <td>Name</td>
+		                                <td><?= Yii::t('app', 'name') ?></td>
 		                                <td><?= $_SERVER['SERVER_NAME'] ?></td>
 		                            </tr>
 		                            <tr>
-		                                <td>Signature</td>
+		                                <td><?= Yii::t('app', 'signature') ?></td>
 		                                <td><?= $_SERVER['SERVER_SIGNATURE'] ?></td>
 		                            </tr>
 		                            <tr>
-		                                <td>OS</td>
+		                                <td><?= Yii::t('app', 'OS') ?></td>
 		                                <td><?= PHP_OS ?></td>
 		                            </tr>
 		                        </tbody>
@@ -67,22 +67,22 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
 
 	                <div class="col-lg-12">
 
-	                    <h4>PHP</h4>
+	                    <h4><?= Yii::t('app', 'PHP')?></h4>
 
 	                    <div class="table-responsive">
 
 		                    <table class="table table-bordered table-server">
 		                        <tbody>
 		                            <tr>
-		                                <td>Version</td>
+		                                <td><?= Yii::t('app', 'version') ?></td>
 		                                <td><?= phpversion() ?></td>
 		                            </tr>
 		                            <tr>
-		                                <td>Time</td>
+		                                <td><?= Yii::t('app', 'time') ?></td>
 		                                <td><?= date('r (e)') ?></td>
 		                            </tr>
 		                            <tr>
-		                                <td>OS</td>
+		                                <td><?= Yii::t('app', 'OS') ?></td>
 		                                <td><?= php_uname() ?></td>
 		                            </tr>
 		                        </tbody>
@@ -98,18 +98,18 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
 
 	                <div class="col-lg-12">
 
-	                    <h4>MYSQL</h4>
+	                    <h4><?= Yii::t('app', 'MYSQL') ?></h4>
 
 	                    <div class="table-responsive">
 
 		                    <table class="table table-bordered table-server">
 		                        <tbody>
 		                            <tr>
-		                                <td>Version</td>
+		                                <td><?= Yii::t('app', 'version') ?></td>
 		                                <td><?= Yii::$app->db2->createCommand("SELECT @@version")->queryScalar() ?></td>
 		                            </tr>
 		                            <tr>
-		                                <td>Time</td>
+		                                <td><?= Yii::t('app', 'time') ?></td>
 		                                <td><?= Yii::$app->db2->createCommand("SELECT CURRENT_TIMESTAMP()")->queryScalar() ?> (<?= Yii::$app->db2->createCommand("SELECT @@system_time_zone")->queryScalar() ?>)</td>
 		                            </tr>
 		                        </tbody>
@@ -125,16 +125,16 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
 
 	                <div class="col-lg-12">
 
-	                    <h4 class="text-center">Table Information</h4>
+	                    <h4 class="text-center"><?= Yii::t('app', 'table_information') ?></h4>
 
 	    				<table class="table table-bordered table-database">
 	                        <thead>
 	                            <tr>
-	                                <th width="10">No</th>
-	                                <th>Table</th>
-	                                <th>Engine</th>
-	                                <th>Rows</th>
-	                                <th>Size</th>
+	                                <th width="10"><?= Yii::t('app', 'NO') ?></th>
+	                                <th><?= Yii::t('app', 'table') ?></th>
+	                                <th><?= Yii::t('app', 'engine') ?></th>
+	                                <th><?= Yii::t('app', 'rows') ?></th>
+	                                <th><?= Yii::t('app', 'size') ?></th>
 	                            </tr>
 	                        </thead>
 	                        <tbody>

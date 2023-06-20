@@ -10,9 +10,9 @@ use backend\models\UserType;
 /* @var $model backend\models\User */
 
 $this->title = $model->name;
-$this->params['page_title'] = 'View';
+$this->params['page_title'] = Yii::t('app', 'view');
 $this->params['page_desc'] = $this->title;
-$this->params['breadcrumbs'][] = ['label' => 'Users', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>

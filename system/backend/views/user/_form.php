@@ -58,7 +58,7 @@ if ($model->type === 'C')
             <?= $form->field($model, 'type')->widget(Select2::classname(),[
                     'data' => $select_type,
                     'options' => [
-                        'placeholder' => 'Pilih Type',
+                        'placeholder' => Yii::t('app', 'select_type'),
                         'value' => $model->isNewRecord ? 'B' : $model->type,
                     ],
                     'pluginOptions' => [
@@ -70,7 +70,7 @@ if ($model->type === 'C')
             <?= $form->field($model, 'code')->widget(Select2::classname(),[
                     'data' => $select_code,
                     'options' => [
-                        'placeholder' => 'Pilih Code',
+                        'placeholder' => Yii::t('app', 'select_code'),
                     'value' => $model->isNewRecord ? 'B' : $model->code,
                     ],
                     'pluginOptions' => [
@@ -92,7 +92,7 @@ if ($model->type === 'C')
             <?= $form->field($model, 'level')->widget(Select2::classname(),[
                     'data' => $select_level,
                     'options' => [
-                        'placeholder' => 'Pilih Level',
+                        'placeholder' => Yii::t('app', 'select_level'),
                     ],
                     'pluginOptions' => [
                         'allowClear' => false
@@ -107,7 +107,7 @@ if ($model->type === 'C')
             <?= $form->field($model, 'status')->widget(Select2::classname(),[
                 'data' => [ 10 => 'ACTIVE', 9 => 'INACTIVE', 0 => 'DELETED' ],
                 'options' => [
-                    'placeholder' => 'Pilih ...',
+                    'placeholder' => Yii::t('app', 'select_status'),
                     'value' => $model->isNewRecord ? 10 : $model->status,
                 ],
                 'pluginOptions' => [

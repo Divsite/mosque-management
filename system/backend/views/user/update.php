@@ -5,12 +5,12 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\User */
 
-$this->title = 'Update User: ' . $model->name;
-$this->params['page_title'] = 'Update';
+$this->title = Yii::t('app', 'update_user') . '-' . $model->name;
+$this->params['page_title'] = Yii::t('app', 'update');
 $this->params['page_desc'] = $this->title;
-$this->params['breadcrumbs'][] = ['label' => 'Users', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Update';
+$this->params['breadcrumbs'][] = Yii::t('app', 'update');
 ?>
 <div class="card table-card">
     <div class="card-header">

@@ -7,10 +7,10 @@ use kartik\dialog\Dialog;
 /* @var $this yii\web\View */
 /* @var $model backend\models\UserAccess */
 
-$this->title = 'User Access';
-$this->params['page_title'] = 'Control';
+$this->title = Yii::t('app', 'user_access');
+$this->params['page_title'] = Yii::t('app', 'control');
 $this->params['page_desc'] = $this->title;
-$this->params['breadcrumbs'][] = ['label' => 'User Access', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_access'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">

@@ -7,7 +7,7 @@ use yii\widgets\DetailView;
 /* @var $model backend\models\AppLoga */
 
 $this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'App Logas', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'app_log_api'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
@@ -27,10 +27,10 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-text">
             <div class="app-loga-view">
                 <p>
-                    <?= Html::a('Delete', ['delete', 'id' => $model->id], [
+                    <?= Html::a(Yii::t('app', 'delete'), ['delete', 'id' => $model->id], [
                         'class' => 'btn btn-danger',
                         'data' => [
-                            'confirm' => 'Are you sure you want to delete this item?',
+                            'confirm' => Yii::t('app', 'are_you_sure_want_to_clear_all'),
                             'method' => 'post',
                         ],
                     ]) ?>

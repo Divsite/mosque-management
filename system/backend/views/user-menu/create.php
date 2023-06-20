@@ -5,9 +5,13 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\UserMenu */
 
-$this->title = 'Create User Menu';
-$this->params['breadcrumbs'][] = ['label' => 'User Menus', 'url' => ['index']];
+$this->title = Yii::t('app', 'create_user_menu');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_menu'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
+
+// $test = Yii::$app->user->identity->level;
+// var_dump($test);
+// die;
 ?>
 <div class="card table-card">
     <div class="card-header">

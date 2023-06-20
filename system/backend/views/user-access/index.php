@@ -7,8 +7,8 @@ use yii\grid\GridView;
 /* @var $searchModel backend\models\UserAccessSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'User Accesses';
-$this->params['page_title'] = 'Index';
+$this->title = Yii::t('app', 'user_access');
+$this->params['page_title'] = Yii::t('app', 'user_access');
 $this->params['page_desc'] = $this->title;
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -29,7 +29,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="user-access-index">
 
                 <p>
-                    <?= Html::a('Create User Access', ['create'], ['class' => 'btn btn-success']) ?>
+                    <?= Html::a(Yii::t('app', 'create_user_access'), ['create'], ['class' => 'btn btn-success']) ?>
                 </p>
 
                 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>

@@ -8,7 +8,7 @@ use yii\helpers\Url;
 use yii\helpers\Html;
 use yii\bootstrap4\ActiveForm;
 
-$this->title = 'Login';
+$this->title = Yii::t('app', 'login');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="site-login">
@@ -16,20 +16,20 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="login-box">
         
         <div class="login-logo">
-            <a href="<?=Url::base()?>"><b>Admin</b>LTE</a>
+            <a href="<?=Url::base()?>"><b>Mosque</b> HUB</a>
         </div>
 
         <div class="card">
 
             <div class="card-body login-card-body">
 
-                <p class="login-box-msg">Sign in to start your session</p>
+                <p class="login-box-msg"><?= Yii::t('app', 'sign_in_start_your_session') ?></p>
 
                 <?php $form = ActiveForm::begin(['id' => 'login-form', 'options' => ['class' => 'md-float-material form-material']]); ?>
 
                 <?= $form->field($model, 'username', [
                     'options' => ['class' => 'form-group'],
-                    'inputOptions' => [ 'class' => 'form-control', 'placeholder' => 'Username'],
+                    'inputOptions' => [ 'class' => 'form-control', 'placeholder' => Yii::t('app', 'username')],
                     'labelOptions' => [ 'class' => ''],
                     'template' => '
                     <div class="input-group mb-3">
@@ -45,7 +45,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                 <?= $form->field($model, 'password', [
                     'options' => ['class' => 'form-group'],
-                    'inputOptions' => ['class' => 'form-control', 'placeholder' => 'Password'],
+                    'inputOptions' => ['class' => 'form-control', 'placeholder' => Yii::t('app', 'password')],
                     'labelOptions' => [ 'class' => ''],
                     'template' => '
                     <div class="input-group mb-3">
@@ -61,7 +61,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                 <div class="row">
 
-                    <div class="col-8">
+                    <div class="col-md-8 col-sm-12 col-xs-12">
 
                         <?= $form->field($model, 'rememberMe', [
                         'options' => ['class' => ''],
@@ -72,16 +72,16 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     </div>
 
-                    <div class="col-4">
+                    <div class="col-md-4 col-sm-12 col-xs-12">
 
-                        <?= Html::submitButton('Sign In', ['class' => 'btn btn-primary btn-block', 'name' => 'login-button']) ?>    
+                        <?= Html::submitButton(Yii::t('app', 'signin'), ['class' => 'btn btn-primary btn-block', 'name' => 'login-button']) ?>    
                     </div>
 
                 </div>
 
                 <?php ActiveForm::end(); ?>
 
-                <div class="social-auth-links text-center mb-3">
+                <!-- <div class="social-auth-links text-center mb-3">
 
                 <p>- OR -</p>
 
@@ -93,15 +93,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
                 </a>
 
-                </div>
+                </div> -->
                 <!-- /.social-auth-links -->
 
                 <p class="mb-1">
-                <a href="forgot-password.html">I forgot my password</a>
+                <a href="forgot-password.html"><?= Yii::t('app', 'forgot_password')  ?></a>
                 </p>
 
                 <p class="mb-0">
-                    <?= Html::a('Register a New Membership', ['registration'], ['class' => 'text-center']) ?>
+                    <?= Html::a(Yii::t('app', 'register_a_new_member'), ['registration'], ['class' => 'text-center']) ?>
                 <!-- <a href="register.html" class="text-center">Register a new membership</a> -->
                 </p>
 

@@ -5,10 +5,10 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\UserLevel */
 
-$this->title = 'Update User Level: ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'User Levels', 'url' => ['index']];
+$this->title = Yii::t('app', 'update_user_level') .' - ' . $model->name;
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_level'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->code]];
-$this->params['breadcrumbs'][] = 'Update';
+$this->params['breadcrumbs'][] = Yii::t('app', 'update');
 ?>
 <div class="card table-card">
     <div class="card-header">

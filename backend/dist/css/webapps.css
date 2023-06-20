@@ -209,3 +209,9 @@
 	background-color: #fff;
 	cursor: not-allowed;
 }
+
+
+/* margin button in index */
+.btn-margin {
+    margin: 3px;
+}

@@ -5,8 +5,8 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\UserAccess */
 
-$this->title = 'Create User Access';
-$this->params['breadcrumbs'][] = ['label' => 'User Accesses', 'url' => ['index']];
+$this->title = Yii::t('app', 'create_user_access');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_access'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">

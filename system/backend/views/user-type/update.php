@@ -5,10 +5,10 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\UserType */
 
-$this->title = 'Update User Type: ' . $model->code;
-$this->params['breadcrumbs'][] = ['label' => 'User Types', 'url' => ['index']];
+$this->title = Yii::t('app', 'update_user_type') . ' - ' . $model->code;
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_type'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->code, 'url' => ['view', 'id' => $model->code]];
-$this->params['breadcrumbs'][] = 'Update';
+$this->params['breadcrumbs'][] = Yii::t('app', 'update');
 ?>
 <div class="card table-card">
     <div class="card-header">

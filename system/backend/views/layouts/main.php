@@ -4,11 +4,10 @@
 /* @var $content string */
 
 use backend\assets\AppAsset;
+use backend\models\Branch;
 use yii\helpers\uRL;
 use yii\helpers\Html;
 use yii\widgets\Menu;
-use yii\bootstrap4\Nav;
-use yii\bootstrap4\NavBar;
 use yii\bootstrap4\Breadcrumbs;
 use common\widgets\Alert;
 
@@ -24,6 +23,7 @@ AppAsset::register($this);
     <?php $this->registerCsrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
+    <link rel="shortcut icon" href="<?=Url::base()?>/dist/img/logo_ica.jpg">
     <style type="text/css">
         .center {
           position: absolute;
@@ -59,7 +59,7 @@ AppAsset::register($this);
       <li class="nav-item">
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
-      <li class="nav-item d-none d-sm-inline-block">
+      <!-- <li class="nav-item d-none d-sm-inline-block">
         <a href="../../index3.html" class="nav-link">Home</a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
@@ -67,6 +67,15 @@ AppAsset::register($this);
       </li>
       <li class="nav-item d-none d-sm-inline-block">
         <a href="<?=Url::base()?>/logout" class="nav-link">Logout</a>
+      </li> -->
+      <li class="nav-item" style="padding-right: 10px;">
+        <a href="<?=Url::base()?>/logout" class="btn btn-default btn-flat">Logout</a>
+      </li>
+      <li class="nav-item">
+        <?php $level = Yii::$app->user->identity->level ?>
+          <?= Html::a('Profile', ['user/update', 'id' => Yii::$app->user->identity->id],
+              ['data-method' => 'post', 'class' => 'btn btn-default btn-flat'])
+          ?>
       </li>
     </ul>
 
@@ -181,12 +190,19 @@ AppAsset::register($this);
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="<?=Url::base()?>" class="brand-link">
-      <img src="<?=Url::base()?>/dist/img/logo_ica.jpg"
-           alt="Yii2 Webapps Logo"
+    <a href="<?= Url::base() ?>" class="brand-link">
+      <?php
+        $branch = Branch::find()->where(['code' => Yii::$app->user->identity->code])->one();
+        
+        $branchImage = $branch['bch_image'] && is_file(Yii::getAlias('@webroot') . $branch['bch_image']) ? $branch['bch_image'] : '../images/no_background.jpg';
+
+        $branchName = $branch->bch_name ?? Yii::t('app', 'mosque_hub');
+      ?>
+      <img src="<?=Url::base().$branchImage?>"
+           alt="<?= Yii::t('app', 'mosque_hub') ?>"
            class="brand-image img-circle elevation-3"
            style="opacity: .8">
-      <span class="brand-text font-weight-light"><?= Yii::t('app', 'ica_apps') ?></span>
+      <span class="brand-text font-weight-light"><?= $branchName ?></span>
     </a>
 
     <!-- Sidebar -->

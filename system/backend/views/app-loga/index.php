@@ -7,7 +7,7 @@ use yii\grid\GridView;
 /* @var $searchModel backend\models\AppLogaSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'App Logas';
+$this->title = Yii::t('app', 'app_log_api');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="branch-index">
@@ -38,7 +38,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                         'id',
                         [
-                            'label' => 'Username',
+                            'label' => Yii::t('app', 'username'),
                             'attribute' => 'id_user',
                             'value' => function ($data) {
                                 $user = \backend\models\User::findOne(['id' => $data['id_user']]);
@@ -59,7 +59,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             'view' => function($url, $model) {
                                 return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-search"></i></button>', 
                                     ['view', 'id' => $model['id']], 
-                                    ['title' => 'View']);
+                                    ['title' => Yii::t('app', 'view')]);
                                 }
                             ]
                         ],

@@ -64,24 +64,20 @@ class User extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'type' => 'Type',
-            'code' => 'Code',
-            'level' => 'Level',
-            'username' => 'Username',
-            'auth_key' => 'Auth Key',
-            'password_hash' => 'Password Hash',
-            'password_reset_token' => 'Password Reset Token',
-            'email' => 'Email',
-            'name' => 'Name',
-            'image' => 'Image',
-            'status' => 'Status',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
-            'verification_token' => 'Verification Token',
+            'type' => Yii::t('app', 'type'),
+            'code' => Yii::t('app', 'code'),
+            'level' => Yii::t('app', 'level'),
+            'username' => Yii::t('app', 'username'),
+            'auth_key' => Yii::t('app', 'auth_key'),
+            'password_hash' => Yii::t('app', 'password'),
+            'password_reset_token' => Yii::t('app', 'password_reset_token'),
+            'email' => Yii::t('app', 'email'),
+            'name' => Yii::t('app', 'name'),
+            'image' => Yii::t('app', 'image'),
+            'status' => Yii::t('app', 'status'),
+            'created_at' => Yii::t('app', 'created_at'),
+            'updated_at' => Yii::t('app', 'updated_at'),
+            'verification_token' => Yii::t('app', 'verification_token'),
         ];
-    }
-    public static function getCountVolunteer()
-    {
-        return static::find()->where(['level' => '2b6cc9c30eaad9c109091ea928529cbd'])->count();
     }
 }

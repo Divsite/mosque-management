@@ -5,10 +5,10 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\UserMenu */
 
-$this->title = 'Update User Menu: ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'User Menus', 'url' => ['index']];
+$this->title = Yii::t('app', 'update_user_menu') . ' - ' . $model->name;
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_menu'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Update';
+$this->params['breadcrumbs'][] = Yii::t('app', 'update');
 ?>
 <div class="card table-card">
     <div class="card-header">

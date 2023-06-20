@@ -142,7 +142,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'id_sub')->widget(Select2::classname(),[
                     'data' => $select_menu,
                     'options' => [
-                        'placeholder' => 'Pilih Menu Level 2',
+                        'placeholder' => Yii::t('app', 'select_level_menu_one'),
                         'value' => $model->isNewRecord ? 0 : $model->id_sub,
                     ],
                     'pluginOptions' => [
@@ -154,7 +154,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'id_sub2')->widget(Select2::classname(),[
                     'data' => $select_menu,
                     'options' => [
-                        'placeholder' => 'Pilih Menu Level 2',
+                        'placeholder' => Yii::t('app', 'select_level_menu_two'),
                         'value' => $model->isNewRecord ? 0 : $model->id_sub2,
                     ],
                     'pluginOptions' => [
@@ -170,7 +170,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'level')->widget(Select2::classname(),[
                     'data' => $select_level,
                     'options' => [
-                        'placeholder' => 'User Level',
+                        'placeholder' => Yii::t('app', 'select_level'),
                         'value' => $model->isNewRecord ? Yii::$app->user->identity->level : $model->level,
                     ],
                     'pluginOptions' => [
@@ -182,7 +182,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'module')->widget(Select2::classname(),[
                     'data' => ['app-backend-webapps' => 'app-backend-webapps', 'app-frontend-webapps' => 'app-frontend-webapps'] ,
                     'options' => [
-                        'placeholder' => 'Pilih Module',
+                        'placeholder' => Yii::t('app', 'select_module'),
                         'value' => $model->isNewRecord ? 'app-backend-webapps' : $model->module,
                     ],
                     'pluginOptions' => [
@@ -194,7 +194,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'class')->widget(Select2::classname(),[
                     'data' => [ 'L' => 'LINK', 'S' => 'SUB MENU', 'H' => 'HEADER', 'D' => 'DIVIDER' ],
                     'options' => [
-                        'placeholder' => 'Pilih Class',
+                        'placeholder' => Yii::t('app', 'select_class_menu'),
                         'value' => $model->isNewRecord ? 'L' : $model->class,
                     ],
                     'pluginOptions' => [
@@ -210,7 +210,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'url_controller')->widget(Select2::classname(),[
                     'data' => ArrayHelper::map($backend_fulllist, 'key', 'key'),
                     'options' => [
-                        'placeholder' => 'Pilih Controller',
+                        'placeholder' => Yii::t('app', 'select_controller'),
                         'value' => $model->isNewRecord ? 'L' : $model->url_controller,
                     ],
                     'pluginOptions' => [
@@ -222,7 +222,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'url_view')->widget(Select2::classname(),[
                     'data' => $model->isNewRecord ? null : [$model->url_view => $model->url_view],
                     'options' => [
-                        'placeholder' => 'Pilih View',
+                        'placeholder' => Yii::t('app', 'select_view'),
                         'value' => $model->isNewRecord ? null : $model->url_view,
                     ],
                     'pluginOptions' => [
@@ -242,7 +242,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
             <?= $form->field($model, 'icon')->widget(Select2::classname(),[
                     'data' => $fontawesome,
                     'options' => [
-                        'placeholder' => 'Pilih Icon',
+                        'placeholder' => Yii::t('app', 'select_icon'),
                     ],
                     'pluginOptions' => [
                         'escapeMarkup' => new JsExpression('function (markup) { return markup; }'),
@@ -278,7 +278,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
 
             <div class="form-group">
 
-                <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+                <?= Html::submitButton(Yii::t('app', 'save'), ['class' => 'btn btn-success']) ?>
 
             </div>
 

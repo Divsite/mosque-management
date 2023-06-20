@@ -7,7 +7,7 @@ use yii\grid\GridView;
 /* @var $searchModel backend\models\BranchSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Branches';
+$this->title = Yii::t('app', 'branch');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="branch-index">
@@ -27,7 +27,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-body">
 
             <p>
-                <?= Html::a('Create Branch', ['create'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a(Yii::t('app', 'create_branch'), ['create'], ['class' => 'btn btn-success']) ?>
             </p>
 
             <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -38,7 +38,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     'dataProvider' => $dataProvider,
                     'filterModel' => $searchModel,
                     'columns' => [
-                        ['class' => 'yii\grid\SerialColumn'],
+                        [
+                            'class' => 'yii\grid\SerialColumn',
+                            'header' => 'No',
+                            'headerOptions' => ['style' => 'text-align:center'],
+                            'contentOptions' => ['style' => 'text-align:center']
+                        ],
 
                         'code',
                         'bch_type',

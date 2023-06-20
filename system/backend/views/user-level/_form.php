@@ -28,7 +28,7 @@ $select_type = ArrayHelper::map(UserType::find()->asArray()->all(),'code', funct
     <?= $form->field($model, 'type')->widget(Select2::classname(),[
             'data' => $select_type,
             'options' => [
-                'placeholder' => 'Pilih Type',
+                'placeholder' => Yii::t('app', 'select_type'),
                 'value' => $model->isNewRecord ? 'B' : $model->type,
             ],
             'pluginOptions' => [
@@ -40,7 +40,7 @@ $select_type = ArrayHelper::map(UserType::find()->asArray()->all(),'code', funct
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
     <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton(Yii::t('app', 'save'), ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

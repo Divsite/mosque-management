@@ -8,12 +8,14 @@ use backend\models\ReceiverType;
 use backend\models\ReceiverClass;
 use backend\models\CitizensAssociation;
 use backend\models\NeighborhoodAssociation;
+use backend\models\Resident;
+use kartik\time\TimePicker;
 use yii\helpers\Url;
-use kartik\date\DatePicker;
 
 /* @var $this yii\web\View */
 /* @var $model backend\models\Receiver */
 /* @var $form yii\widgets\ActiveForm */
+
 ?>
 
 <div class="receiver-form">
@@ -23,7 +25,7 @@ use kartik\date\DatePicker;
     <?= $form->field($model, 'receiver_type_id', ['inputOptions'=>['id'=>'receiver_type_id']])->widget(Select2::classname(),[
             'data' => ArrayHelper::map(ReceiverType::find()->all(), 'id', 'name'),
             'options' => [
-                'placeholder' => 'Pilih Tipe',
+                'placeholder' => Yii::t('app', 'select_type'),
                 'value' => $model->receiver_type_id,
             ],
             'pluginOptions' => [
@@ -47,7 +49,19 @@ use kartik\date\DatePicker;
                         ],
                     ]);
                 ?>
-                <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+
+                <?= $form->field($model, 'resident_id')->widget(Select2::classname(),[
+                        'data' => ArrayHelper::map(Resident::find()->with('user')->all(), 'id', 'user.name'),
+                        'options' => [
+                            'placeholder' => Yii::t('app', 'select_resident'),
+                            'value' => $model->resident_id,
+                        ],
+                        'pluginOptions' => [
+                            'allowClear' => false
+                        ],
+                    ]);
+                ?>
+                
             </div>
             <div class="col-lg-6">
                 <?= $form->field($model, 'desc')->textarea(['rows' => 6]) ?>
@@ -59,69 +73,49 @@ use kartik\date\DatePicker;
 
     <div id="victim_type" style="display: none">
 
-        <?= $form->field($model, 'qty')->textInput() ?>
+        <?= Html::label(Yii::t('app', 'qty'),['class' => 'control-label']) ?>
+        <input type="text" class="form-control" name="qty" id="qty" placeholder="<?= Yii::t('app', 'qty') ?>" value="<?= Yii::$app->request->get('qty')?>">
+
+        <?= $form->field($model, 'citizens_association_id')->widget(Select2::classname(), [
+                'data' => ArrayHelper::map(CitizensAssociation::find()->all(), 'id', 'name'),
+                'options' => [
+                    'placeholder' => Yii::t('app', 'select_citizens_asociation'),
+                    'onChange' => '$.post("'.Url::base().'/reff/citizens?type=C&id='.'" + $(this).val(), function(data) {
+                            what = JSON.parse(data);
+                            console.log(what);
+                            $("#receiver-neighborhood_association_id").html(what.neighborhood);
+                        }
+                    );',
+                ],
+                'pluginOptions' => [
+                    'allowClear' => false
+                ],
+            ]);
+        ?>
+
+        <?= $form->field($model, 'neighborhood_association_id')->widget(Select2::classname(), [
+                'data' => ArrayHelper::map(NeighborhoodAssociation::find()->all(), 'id', 'name'),
+                'options' => [
+                    'placeholder' => Yii::t('app', 'select_neighborhood_association'),
+                ],
+                'pluginOptions' => [
+                    'allowClear' => false
+                ],
+            ]);
+        ?>
+
+        <?= $form->field($model, 'clock')->widget(TimePicker::classname(), [
+            'options' => ['placeholder' => Yii::t('app', 'select_time')],
+            'pluginOptions' => [
+                'showMeridian' => false,
+                // additional plugin options
+            ]]);
+        ?>
     
     </div>
 
-    <div id="general" style="display: none">
-
-        <div class="row">
-                <div class="col-lg-6">
-
-                    <?= $form->field($model, 'citizens_association_id')->widget(Select2::classname(), [
-                            'data' => ArrayHelper::map(CitizensAssociation::find()->all(), 'id', 'name'),
-                            'options' => [
-                                'placeholder' => Yii::t('app', 'select_citizens_asociation'),
-                                'onChange' => '$.post("'.Url::base().'/reff/citizens?type=C&id='.'" + $(this).val(), function(data) {
-                                        what = JSON.parse(data);
-                                        console.log(what);
-                                        $("#receiver-neighborhood_association_id").html(what.neighborhood);
-                                    }
-                                );',
-                            ],
-                            'pluginOptions' => [
-                                'allowClear' => false
-                            ],
-                        ]);
-                    ?>
-
-                    <?= $form->field($model, 'neighborhood_association_id')->widget(Select2::classname(), [
-                            'data' => ArrayHelper::map(NeighborhoodAssociation::find()->all(), 'id', 'name'),
-                            'options' => [
-                                'placeholder' => Yii::t('app', 'select_neighborhood_association'),
-                            ],
-                            'pluginOptions' => [
-                                'allowClear' => false
-                            ],
-                        ]);
-                    ?>
-
-                </div>
-
-                <div class="col-lg-6">
-
-                    <?= $form->field($model, 'registration_year')->widget(DatePicker::classname(),[
-                        'model' => $model,
-                        'attribute' => 'registration_year',
-                        'options' => ['class' => 'form-control'],
-                        'type' => DatePicker::TYPE_INPUT,
-                            'pluginOptions' => [
-                                'format' => 'yyyy',
-                                'minViewMode' => 2,
-                                'maxViewMode' => 2,
-                                'autoclose' => true,
-                            ],
-                        ]);
-                    ?>
-
-                </div>
-        </div>
-    </div>
-
-
-
     <div class="form-group">
-        <?= Html::submitButton(Yii::t('app', 'Save'), ['class' => 'btn btn-success']) ?>
+        <?= Html::submitButton(Yii::t('app', 'save'), ['class' => 'btn btn-success']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>
@@ -136,16 +130,13 @@ $('#receiver_type_id').on('change', function (e) {
     let data = $(this).val();
     $("#charity_type").hide();
     $("#victim_type").hide();
-    $("#general").hide();
 
     if(data == 1) { // charity
         $("#charity_type").show();
         $("#victim_type").hide();
-        $("#general").show();
     } else if(data == 2) { // sacrifice
         $("#charity_type").hide();
         $("#victim_type").show();
-        $("#general").show();
     }
 });
 

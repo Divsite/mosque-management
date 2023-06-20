@@ -7,7 +7,7 @@ use yii\widgets\DetailView;
 /* @var $model backend\models\UserAccess */
 
 $this->title = $model->id;
-$this->params['breadcrumbs'][] = ['label' => 'User Accesses', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user_access'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>

@@ -5,10 +5,10 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\User */
 
-$this->title = 'Create User';
-$this->params['page_title'] = 'Create';
+$this->title = Yii::t('app', 'create_user');
+$this->params['page_title'] = Yii::t('app', 'create');
 $this->params['page_desc'] = $this->title;
-$this->params['breadcrumbs'][] = ['label' => 'Users', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'user'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">
