@@ -32,6 +32,7 @@ class AppAsset extends AssetBundle
         "plugins/sweetalert2/sweetalert2.all.js",
         "dist/js/adminlte.min.js",
         "dist/js/demo.js",
+
         
     ];
     public $depends = [

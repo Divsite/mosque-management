@@ -2,9 +2,13 @@
 
 namespace backend\controllers;
 
+use backend\models\Officer;
 use Yii;
 use backend\models\User;
+use backend\models\Populate;
+use backend\models\Resident;
 use backend\models\UserSearch;
+use backend\models\UserType;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -117,7 +121,90 @@ class UserController extends Controller
 
             $model->auth_key = Yii::$app->security->generateRandomString();
             $model->password_hash = Yii::$app->security->generatePasswordHash($model->password);
+            $model->level = md5($model->level);
+            // var_dump(md5($model->level));
+            // die;
             $model->save();
+
+            if ($model->type == UserType::RESIDENT) {
+                $populate = Populate::find()->where(['code' => $model->code])->one();
+
+                if ($populate) {
+                    $province = $populate->village->location->province_name; // provinsi
+                    $city = $populate->village->location->city_name; // kota
+                    $district = $populate->village->location->district_name; // kecamatan
+                    $village = $populate->village->id; // kelurahan
+                    $citizen = $populate->citizenAssociation->id; // rw
+                    $neighborhood = $populate->neighborhoodAssociation->id; // rt
+                }
+
+                $resident = new Resident();
+                $resident->user_id = $model->id;
+                $resident->nik = null;
+                $resident->telp = null;
+                $resident->identity_card_image = null;
+                $resident->home_image = null;
+                $resident->birth_place = null;
+                $resident->birth_date = null;
+                $resident->gender_id = null;
+                $resident->education_id = null;
+                $resident->education_major_id = null;
+                $resident->married_status_id = null;
+                $resident->nationality_id = null;
+                $resident->religion_id = null;
+                $resident->residence_status_id = null;
+                $resident->province = $province;
+                $resident->city = $city;
+                $resident->district = $district;
+                $resident->village_id = $village;
+                $resident->citizen_association_id = $citizen;
+                $resident->neighborhood_association_id = $neighborhood;
+                $resident->address = null;
+                $resident->family_head_status = null;
+                $resident->dependent_number = null;
+                $resident->interest = null;
+                $resident->registration_date = date('Y-m-d h:i:s');
+                $resident->save(false);
+            }
+
+            if ($model->type == UserType::BRANCH) {
+                $officer = new Officer();
+                $officer->user_id = $model->id;
+                $officer->nik = null;
+                $officer->nip = null;
+                $officer->npwp = null;
+                $officer->work_location_id = null;
+                $officer->officer_status_id = null;
+                $officer->division_id = null;
+                $officer->position_id = null;
+                $officer->salary = null;
+                $officer->bank_id = null;
+                $officer->number_account = null;
+                $officer->shift_attendance_id = null;
+                $officer->telp = null;
+                $officer->identity_card_image = null;
+                $officer->home_image = null;
+                $officer->birth_place = null;
+                $officer->birth_date = null;
+                $officer->gender_id = null;
+                $officer->education_id = null;
+                $officer->education_major_id = null;
+                $officer->married_status_id = null;
+                $officer->nationality_id = null;
+                $officer->religion_id = null;
+                $officer->residence_status_id = null;
+                $officer->province = null;
+                $officer->city = null;
+                $officer->district = null;
+                $officer->postcode = null;
+                $officer->citizen_association_id = null;
+                $officer->neighborhood_association_id = null;
+                $officer->address = null;
+                $officer->interest = null;
+                $officer->registration_date = date('Y-m-d h:i:s');
+                $officer->facility_id = null;
+                $officer->save(false);
+            }
 
             /* Application Log Database */
             $table_name = $model->getTableSchema()->name;

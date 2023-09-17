@@ -10,6 +10,8 @@ use backend\models\Branch;
 use backend\models\CitizensAssociation;
 use backend\models\Customer;
 use backend\models\NeighborhoodAssociation;
+use backend\models\Populate;
+use backend\models\Resident;
 
 class ReffController extends \yii\web\Controller
 {
@@ -88,6 +90,13 @@ class ReffController extends \yii\web\Controller
                 case 'C':
                     $data_code = Customer::find()->asArray()->all();
                     break;
+                
+                case 'W':
+                    $data_code = Populate::find()
+                                ->with('village', 'citizenAssociation', 'neighborhoodAssociation')
+                                ->asArray()
+                                ->all();
+                    break;
 
                 default:
                     $data_code = [];
@@ -102,23 +111,63 @@ class ReffController extends \yii\web\Controller
         // return json_encode($callback);
     }
 
-    public function actionCitizens($type, $id)
+    public function actionCitizens($id)
     {
-        $citizens = "<option value=''>-</option>";
+        $citizens  = "<option value=''>-</option>";
         $neighborhood  = "<option value=''>-</option>";
+        $resident  = "<option value=''>-</option>";
 
-        if ($type === 'C')
+        $model = CitizensAssociation::find()->where(['village_id' => $id])->asArray()->all();
+        foreach ($model as $key => $value) 
         {
-            $model = NeighborhoodAssociation::find()->where(['citizens_association_id' => $id])->asArray()->all();
-            foreach ($model as $key => $value) 
-            {
-                $neighborhood.= '<option value="' . $value['id'] . '">' . $value['name'] . '</option>';
-            }
+            $citizens.= '<option value="' . $value['id'] . '">' . $value['name'] . '</option>';
         }
 
         return json_encode(array(
             'citizens' => $citizens,
             'neighborhood' => $neighborhood,
+            'resident' => $resident,
+            )
+        );
+    }
+    
+    public function actionNeighborhood($id)
+    {
+        $neighborhood  = "<option value=''>-</option>";
+        $resident  = "<option value=''>-</option>";
+
+        $model = NeighborhoodAssociation::find()->where(['citizens_association_id' => $id])->asArray()->all();
+        foreach ($model as $key => $value) 
+        {
+            $neighborhood.= '<option value="' . $value['id'] . '">' . $value['name'] . '</option>';
+        }
+
+        return json_encode(array(
+            'neighborhood' => $neighborhood,
+            'resident' => $resident,
+            )
+        );
+    }
+    
+    public function actionResident($neighborhood, $citizen, $village)
+    {
+        $resident  = "<option value=''>-</option>";
+
+        $model = Resident::find()
+                ->where(['village_id' => $village])
+                ->andWhere(['citizen_association_id' => $citizen])
+                ->andWhere(['neighborhood_association_id' => $neighborhood])
+                ->with('user')
+                ->asArray()
+                ->all();
+
+        foreach ($model as $key => $value) 
+        {
+            $resident.= '<option value="' . $value['id'] . '">' . $value['user']['name'] . '</option>';
+        }
+
+        return json_encode(array(
+            'resident' => $resident,
             )
         );
     }

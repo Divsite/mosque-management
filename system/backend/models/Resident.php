@@ -56,12 +56,12 @@ class Resident extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nik', 'gender_id', 'education_id', 'education_major_id', 'married_status_id', 'nationality_id', 'religion_id', 'residence_status_id', 'citizen_association_id', 'neighborhood_association_id', 'family_head_status', 'dependent_number'], 'integer'],
+            [['nik', 'gender_id', 'education_id', 'education_major_id', 'married_status_id', 'nationality_id', 'religion_id', 'residence_status_id', 'citizen_association_id', 'neighborhood_association_id', 'family_head_status', 'dependent_number', 'village_id'], 'integer'],
             [['birth_date', 'registration_date'], 'safe'],
             [['address'], 'string'],
             [['user_id', 'telp', 'identity_card_image', 'home_image', 'birth_place', 'interest'], 'string', 'max' => 255],
             [['province', 'city', 'district'], 'string', 'max' => 50],
-            [['postcode'], 'string', 'max' => 5],
+            
         ];
     }
 
@@ -89,7 +89,6 @@ class Resident extends \yii\db\ActiveRecord
             'province' => Yii::t('app', 'province'),
             'city' => Yii::t('app', 'city'),
             'district' => Yii::t('app', 'district'),
-            'postcode' => Yii::t('app', 'postcode'),
             'citizen_association_id' => Yii::t('app', 'citizens_association_id'),
             'neighborhood_association_id' => Yii::t('app', 'neighborhood_association_id'),
             'address' => Yii::t('app', 'address'),

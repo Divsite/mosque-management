@@ -18,6 +18,9 @@ use Yii;
  */
 class Charity extends \yii\db\ActiveRecord
 {
+    const CHARITY_TYPE_MANUALLY = 1;
+    const CHARITY_TYPE_AUTOMATIC = 2;
+
     /**
      * {@inheritdoc}
      */
@@ -32,12 +35,9 @@ class Charity extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['type_charity_id'], 'required'],
-            [['type_charity_id'], 'integer'],
-            [['customer_number'], 'string'],
-            [['payment_date', 'timestamp'], 'safe'],
-            // [['customer_address'], 'string', 'max' => 50],
-            [['customer_name', 'payment_total', 'customer_address'], 'string', 'max' => 255],
+            [['type_charity_id', 'type'], 'required'],
+            [['type_charity_id', 'type', 'created_by', 'updated_by'], 'integer'],
+            [['timestamp', 'created_at', 'updated_at'], 'safe'],
         ];
     }
 
@@ -48,13 +48,19 @@ class Charity extends \yii\db\ActiveRecord
     {
         return [
             'id' => Yii::t('app', 'ID'),
-            'type_charity_id' => Yii::t('app', 'Type Charity ID'),
-            'customer_address' => Yii::t('app', 'Customer Address'),
-            'customer_name' => Yii::t('app', 'Customer Name'),
-            'customer_number' => Yii::t('app', 'Customer Number'),
-            'payment_total' => Yii::t('app', 'Payment Total'),
-            'payment_date' => Yii::t('app', 'Payment Date'),
-            'timestamp' => Yii::t('app', 'Timestamp'),
+            'type_charity_id' => Yii::t('app', 'type_charity_id'),
+            'type' => Yii::t('app', 'charity_type'),
+            'branch_code' => Yii::t('app', 'branch_code'),
+            'created_by' => Yii::t('app', 'created_by'),
+            'updated_by' => Yii::t('app', 'updated_by'),
+            'created_at' => Yii::t('app', 'created_at'),
+            'updated_at' => Yii::t('app', 'updated_at'),
+            'timestamp' => Yii::t('app', 'timestamp'),
         ];
+    }
+
+    public function getCharityType()
+    {
+        return $this->hasOne(CharityType::class, ['id' => 'type_charity_id']);
     }
 }

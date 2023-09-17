@@ -7,6 +7,7 @@ use backend\models\Receiver;
 use backend\models\ReceiverSearch;
 use backend\models\ReceiverType;
 use backend\models\Branch;
+use backend\models\ReceiverClass;
 // use backend\models\CitizensAssociation;
 // use backend\models\NeighborhoodAssociation;
 use yii\web\Controller;
@@ -246,6 +247,17 @@ class ReceiverController extends Controller
         if ($barcodeNumber !== null && isset($barcodeNumber)) {
 
             if ($receiver !== null) {
+
+                if ($receiver->status == Receiver::CLAIM) {
+                    Yii::$app->getSession()->setFlash('receiver_status_claimed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'    => Yii::t('app', 'error'),
+                        'message'  => Yii::t('app', 'sorry_the_coupon_has_already_been_used'),
+                    ]);
+                    return $this->redirect(['scanner']);
+                }
+
                 // claim coupon update status
                 $receiver->user_id = Yii::$app->user->identity->id;
                 $receiver->status = Receiver::CLAIM;
@@ -343,6 +355,18 @@ class ReceiverController extends Controller
         );
             return $this->redirect(['index']);
         }
+    }
+
+    public function actionSelectReceiverClass($id) : String 
+    {
+        $receiverClass = ReceiverClass::findOne(['id' => $id]);
+
+        $result = json_encode(array(
+                    'get_money' => $receiverClass->get_money ? $receiverClass->get_money : null,
+                    'get_rice' => $receiverClass->get_rice ? $receiverClass->get_rice : null,
+                ));
+
+        return $result;
     }
 
     public function actionReport()

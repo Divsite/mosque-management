@@ -9,12 +9,13 @@ use backend\models\UserLevel;
 use backend\models\UserType;
 use backend\models\Branch;
 use backend\models\Customer;
+use backend\models\Populate;
 
 /* @var $this yii\web\View */
 /* @var $model backend\models\User */
 /* @var $form yii\widgets\ActiveForm */
 
-$select_level = ArrayHelper::map(UserLevel::find()->where(['type' => $model->isNewRecord ? 'B' : $model->type])->asArray()->all(), function($model, $defaultValue) {
+$select_level = ArrayHelper::map(UserLevel::find()->where(['type' => 'W'])->asArray()->all(), function($model, $defaultValue) {
 
     return md5($model['code']);
 
@@ -35,15 +36,6 @@ $select_code = ArrayHelper::map(Branch::find()->asArray()->all(),'code', functio
         return $model['bch_name'];
     }
 );
-
-if ($model->type === 'C')
-{
-    $select_code = ArrayHelper::map(Customer::find()->asArray()->all(),'code', function($model, $defaultValue) {
-
-            return $model['cus_name'];
-        }
-    );
-}
 
 ?>
 
@@ -71,10 +63,30 @@ if ($model->type === 'C')
                     'data' => $select_code,
                     'options' => [
                         'placeholder' => Yii::t('app', 'select_code'),
-                    'value' => $model->isNewRecord ? 'B' : $model->code,
+                        'value' => $model->isNewRecord ? 'B' : $model->code,
                     ],
                     'pluginOptions' => [
-                        'allowClear' => false
+                        'allowClear' => false,
+                        // use matcher to search customize
+                        'matcher' => new \yii\web\JsExpression('function(params, data) {
+                            if ($.trim(params.term) === "") {
+                                return data;
+                            }
+
+                            if (typeof data.text === "undefined") {
+                                return null;
+                            }
+
+                            var keywords = params.term.split(" ");
+                            var text = data.text.toLowerCase();
+                            for (var i = 0; i < keywords.length; i++) {
+                                if (text.indexOf(keywords[i]) === -1) {
+                                    return null;
+                                }
+                            }
+                            return data;
+
+                        }'),
                     ],
                 ]);
             ?>
@@ -180,19 +192,16 @@ function readURL(input) {
 
 $('#user-type').on('change', function(e) {
 
-    this_val = $(this).val();
+    var this_val = $(this).val();
 
     $.post('$url_reff_type' + '?code=' + this_val, function(data) { 
 
-            /*what = JSON.parse(data);
-
-            if (what.status) {
-
-                alert(what.message);
-            }*/
-
             if (data.status) {
 
+                /**
+                 * select level function by type
+                 * level selected from type
+                 * **/
                 data_level = '<option></option>';
 
                 $.each(data.data_level, function(i, val) {
@@ -200,6 +209,15 @@ $('#user-type').on('change', function(e) {
                 });
 
                 $("#user-level").html(data_level);
+
+                /**
+                 * select code function by type
+                 * code selected from type
+                 * **/
+
+                // Clear and populate the Select2 with new data
+                $("#user-code").val(null).trigger("change"); // Clear existing selection
+                $("#user-code").empty(); // Clear existing options
 
                 data_code = '<option></option>';
 
@@ -213,11 +231,20 @@ $('#user-type').on('change', function(e) {
                     if (this_val == 'C') {
                         val_name = val.cus_name ;
                     }
+                    if (this_val == 'W') {
+                        val_name = val.village.location.province_name + ' ' +
+                                    val.village.location.city_name + ' ' + 
+                                    val.village.location.district_name + ' ' + 
+                                    val.village.name + ' ' + 
+                                    val.citizenAssociation.name + ' ' + 
+                                    val.neighborhoodAssociation.name;
+                    }
 
                     data_code+= '<option value="' + val.code + '">' + val_name + '</option>';
+                    $("#user-code").append(new Option(val_name, val.code, false, false));
                 });
 
-                $("#user-code").html(data_code);
+                // $("#user-code").html(data_code);
             }
 
     });

@@ -4,7 +4,16 @@ namespace backend\controllers;
 
 use Yii;
 use backend\models\Charity;
+use backend\models\CharityInfaq;
+use backend\models\CharityManually;
 use backend\models\CharitySearch;
+use backend\models\CharitySodaqoh;
+use backend\models\CharityType;
+use backend\models\CharityWaqaf;
+use backend\models\CharityZakatFidyah;
+use backend\models\CharityZakatFitrah;
+use backend\models\CharityZakatFitrahPackage;
+use backend\models\CharityZakatMal;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -96,12 +105,28 @@ class CharityController extends Controller
     {
         $model = new Charity();
 
+        $charityManually = new CharityManually();
+
+        $charityZakatFitrah = new CharityZakatFitrah();
+        $charityZakatFidyah = new CharityZakatFidyah();
+        $charityInfaq = new CharityInfaq();
+        $charitySodaqoh = new CharitySodaqoh();
+        $charityZakatMal = new CharityZakatMal();
+        $charityWaqaf = new CharityWaqaf();
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('create', [
             'model' => $model,
+            'charityManually' => $charityManually,
+            'charityZakatFitrah' => $charityZakatFitrah,
+            'charityZakatFidyah' => $charityZakatFidyah,
+            'charityInfaq' => $charityInfaq,
+            'charitySodaqoh' => $charitySodaqoh,
+            'charityZakatMal' => $charityZakatMal,
+            'charityWaqaf' => $charityWaqaf,
         ]);
     }
 
@@ -158,5 +183,34 @@ class CharityController extends Controller
     public function actionReport()
     {
         
+    }
+
+    public function actionSelectCharityType($id)
+    {
+        $charityType = CharityType::findOne(['id' => $id]);
+
+        $result = json_encode(array(
+                    'min' => $charityType->min ? $charityType->min : null,
+                    'max' => $charityType->max ? $charityType->max : null,
+                    'rice' => $charityType->total_rice ? $charityType->total_rice : null,
+                    'package' => $charityType->package ? $charityType->package : null,
+                ));
+
+        return $result;
+    }
+
+    public function actionPackageCalculation($id, $type_charity_id)
+    {
+        $charityZakatFitrahPackage = CharityZakatFitrahPackage::findOne($id);
+
+        $charityType = CharityType::findOne($type_charity_id);
+
+        $paymentTotalPackage = $charityZakatFitrahPackage->value * $charityType->package;
+
+        $result = json_encode(array(
+            'payment_total_package' => $paymentTotalPackage ? $paymentTotalPackage : '0',
+        ));
+
+        return $result;
     }
 }

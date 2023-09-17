@@ -18,7 +18,7 @@ class ResidentSearch extends Resident
     {
         return [
             [['id', 'nik', 'gender_id', 'education_id', 'education_major_id', 'married_status_id', 'nationality_id', 'religion_id', 'residence_status_id', 'citizen_association_id', 'neighborhood_association_id', 'family_head_status', 'dependent_number'], 'integer'],
-            [['user_id', 'telp', 'identity_card_image', 'home_image', 'birth_place', 'birth_date', 'province', 'city', 'district', 'postcode', 'address', 'interest', 'registration_date'], 'safe'],
+            [['user_id', 'telp', 'identity_card_image', 'home_image', 'birth_place', 'birth_date', 'province', 'city', 'district', 'address', 'interest', 'registration_date'], 'safe'],
         ];
     }
 
@@ -83,7 +83,6 @@ class ResidentSearch extends Resident
             ->andFilterWhere(['like', 'province', $this->province])
             ->andFilterWhere(['like', 'city', $this->city])
             ->andFilterWhere(['like', 'district', $this->district])
-            ->andFilterWhere(['like', 'postcode', $this->postcode])
             ->andFilterWhere(['like', 'address', $this->address])
             ->andFilterWhere(['like', 'interest', $this->interest]);
 

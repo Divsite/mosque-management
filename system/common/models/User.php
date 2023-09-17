@@ -255,5 +255,9 @@ class User extends ActiveRecord implements IdentityInterface
         return $permissions;
     }
 
+    public function isSuperadmin() // superadmin/root
+    {
+        return $this->level == '8fd335d939dcad62b59c1b682cababbe';
+    }
 
 }

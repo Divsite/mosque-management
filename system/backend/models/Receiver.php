@@ -43,8 +43,8 @@ class Receiver extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['receiver_type_id', 'citizens_association_id', 'neighborhood_association_id'], 'required'],
-            [['receiver_type_id', 'receiver_class_id', 'user_id', 'citizens_association_id', 'neighborhood_association_id', 'status', 'resident_id'], 'integer'],
+            [['receiver_type_id', 'citizens_association_id', 'village_id', 'neighborhood_association_id'], 'required'],
+            [['receiver_type_id', 'receiver_class_id', 'user_id', 'citizens_association_id', 'neighborhood_association_id', 'status', 'resident_id', 'officer_id', 'village_id'], 'integer'],
             [['desc'], 'string'],
             [['registration_year', 'status_update', 'timestamp'], 'safe'],
             [['barcode_number'], 'string', 'max' => 255],
@@ -75,6 +75,8 @@ class Receiver extends \yii\db\ActiveRecord
             'user_id' => Yii::t('app', 'user_id'),
             'branch_code' => Yii::t('app', 'branch_code'),
             'resident_id' => Yii::t('app', 'resident_id'),
+            'officer_id' => Yii::t('app', 'officer_id'),
+            'village_id' => Yii::t('app', 'village_id'),
             'timestamp' => Yii::t('app', 'timestamp'),
         ];
     }

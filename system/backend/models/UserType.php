@@ -14,6 +14,9 @@ use Yii;
  */
 class UserType extends \yii\db\ActiveRecord
 {
+    const BRANCH = 'B';
+    const CUSTOMER = 'C';
+    const RESIDENT = 'W';
     /**
      * {@inheritdoc}
      */
