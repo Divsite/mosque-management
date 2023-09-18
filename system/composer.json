@@ -25,7 +25,8 @@
         "miloschuman/yii2-highcharts-widget": "^9.0",
         "vilochane/yii2-barcode-generator": "dev-master",
         "kartik-v/yii2-widget-timepicker": "^1.0",
-        "kartik-v/yii2-widget-datetimepicker": "@dev"
+        "kartik-v/yii2-widget-datetimepicker": "@dev",
+        "kartik-v/yii2-nav-x": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

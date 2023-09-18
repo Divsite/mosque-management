@@ -7,8 +7,6 @@ use yii\helpers\Html;
 use yii\bootstrap4\Nav;
 use yii\bootstrap4\NavBar;
 use yii\bootstrap4\Breadcrumbs;
-use yii\widgets\Menu;
-//use yii\widgets\Breadcrumbs;
 use frontend\assets\AppAsset;
 use common\widgets\Alert;
 
@@ -42,30 +40,6 @@ $this->title = Yii::t('app', 'mosque_hub');
     ]);
 
     $guestMode = Yii::$app->user->isGuest;
-
-    function generateSubMenu($parentId, $userMenus, $guestMode) {
-        $subMenuItems = [];
-        foreach ($userMenus as $userMenu) {
-            if ($userMenu['id_sub'] == $parentId && $userMenu['guest'] == ($guestMode ? 0 : 1)) {
-                $menuLabel = $userMenu['name'];
-                $menuUrl = [$userMenu['url_controller'] . '/' . $userMenu['url_view']];
-                
-                // Query untuk mengambil submenu sesuai dengan menu utama
-                $subMenus = generateSubMenu($userMenu['id'], $userMenus, $guestMode);
-                
-                if (!empty($subMenus)) {
-                    $subMenuItems[] = [
-                        'label' => $menuLabel,
-                        'items' => $subMenus,
-                        'dropdownOptions' => ['class' => 'dropdown-menu'],
-                    ];
-                } else {
-                    $subMenuItems[] = ['label' => $menuLabel, 'url' => $menuUrl];
-                }
-            }
-        }
-        return $subMenuItems;
-    }
     
     // get menu data
     $userMenus = \backend\models\UserMenu::find()
@@ -78,30 +52,234 @@ $this->title = Yii::t('app', 'mosque_hub');
     $menuItems = [
         ['label' => 'Home', 'url' => ['/site/index']],
     ];
-    
-    foreach ($userMenus as $userMenu) {
-        // sub menu level 1
-        if ($userMenu['id_sub'] == 0) {
-            $menuLabel = $userMenu['name'];
-            $menuUrl = [$userMenu['url_controller'] . '/' . $userMenu['url_view']];
-    
-            $subMenus = generateSubMenu($userMenu['id'], $userMenus, $guestMode);
-    
-            if (!empty($subMenus)) {
-                $menuItems[] = [
-                    'label' => $menuLabel,
-                    'items' => $subMenus,
-                    'dropdownOptions' => ['class' => 'dropdown-menu'],
-                ];
-            } else {
-                $menuItems[] = ['label' => $menuLabel, 'url' => $menuUrl];
+
+    if (count($userMenus) > 0)
+    {
+        foreach ($userMenus as $userMenu) {
+            if ($userMenu['id_sub'] == 0) {
+                $url       = sprintf('%s/%s', $userMenu['url_controller'], $userMenu['url_view']);
+                $url_      = array();
+                $url_array = array($url);
+
+                if (strpos($userMenu['url_parameter'], ',')) {
+
+                    $url_parameters = explode(',', $userMenu['url_parameter']);
+
+                    $url_param_array = [];
+
+                    foreach ($url_parameters as $key2 => $url_parameter) {
+
+                        if (strpos($url_parameter, '=')) {
+
+                            $param = explode('=', $url_parameter);
+
+                            $url_param_array[trim($param[0])] = trim($param[1]);
+                        }
+                        
+                    }
+
+                    $url_ = array_merge($url_array, $url_param_array);
+
+                } else {
+
+                    $url_param_array = [];
+
+                    if (strpos($userMenu['url_parameter'], '=')) {
+
+                        $param = explode('=', $userMenu['url_parameter']);
+
+                        $url_param_array[trim($param[0])] = trim($param[1]);
+
+                    }
+
+                    $url_ = array_merge($url_array, $url_param_array);
+
+                }
+                
+                switch ($userMenu['class']) 
+                {
+                    case 'L':
+                        $menuItems[] = [
+                            'label' => $userMenu['name'],
+                            'url' => $url_
+                        ];
+                    break;
+                    case 'S':
+                        /* ------------------------------------------ MENU LEVEL 2 ------------------------------------------ */
+                        
+                        $userMenus2 = \backend\models\UserMenu::find()
+                        ->where(['module' => Yii::$app->controller->module->id, 'id_sub' => $userMenu['id'], 'guest' => ($guestMode ? 0 : 1)])
+                        ->orderBy(['seq' => SORT_ASC, 'id' => SORT_DESC])
+                        ->asArray()
+                        ->all();
+                        
+                        $menuItems2 = array();
+
+                        if (count($userMenus2) > 0)
+                        {
+                            foreach ($userMenus2 as $key2 => $userMenu2)
+                            {
+                                if ($userMenu2['id_sub2'] == 0)
+                                {
+                                    $url2       = sprintf('%s/%s', $userMenu2['url_controller'], $userMenu2['url_view']);
+                                    $url2_      = array();
+                                    $url2_array = array($url2);
+
+                                    if (strpos($userMenu2['url_parameter'], ',')) {
+
+                                        $url2_parameters = explode(',', $userMenu2['url_parameter']);
+
+                                        $url2_param_array = [];
+
+                                        foreach ($url2_parameters as $key2 => $url2_parameter) {
+
+                                            if (strpos($url2_parameter, '=')) {
+
+                                                $param = explode('=', $url2_parameter);
+
+                                                $url2_param_array[trim($param[0])] = trim($param[1]);
+                                            }
+                                            
+                                        }
+
+                                        $url2_ = array_merge($url2_array, $url2_param_array);
+
+                                    } else {
+
+                                        $url2_param_array = [];
+
+                                        if (strpos($userMenu2['url_parameter'], '=')) {
+
+                                            $param = explode('=', $userMenu2['url_parameter']);
+
+                                            $url2_param_array[trim($param[0])] = trim($param[1]);
+
+                                        }
+
+                                        $url2_ = array_merge($url2_array, $url2_param_array);
+
+                                    }
+
+                                    switch ($userMenu2['class']) {
+                                        
+                                        case 'L':
+                                            $menuItems2[] = [
+                                                'label' => $userMenu2['name'],
+                                                'url' => $url2_
+                                            ];
+                                        break;
+
+                                        case 'S':
+                                            /* ------------------------------------------ MENU LEVEL 3 ------------------------------------------ */
+                                            $userMenus3 = \backend\models\UserMenu::find()
+                                            ->where([
+                                                'module' => Yii::$app->controller->module->id, 
+                                                'id_sub' => $userMenu['id'], 
+                                                'id_sub2' => $userMenu2['id'], 
+                                                'guest' => ($guestMode ? 0 : 1)
+                                            ])
+                                            ->orderBy(['seq' => SORT_ASC, 'id' => SORT_DESC])
+                                            ->asArray()
+                                            ->all();
+
+                                            $menuItems3 = array();
+
+                                            if (count($userMenus3) > 0) // Check if Array Exists
+                                            {
+                                                foreach ($userMenus3 as $key3 => $userMenu3) 
+                                                {
+                                                    if ($userMenu3['id_sub2'] == $userMenu2['id']) 
+                                                    {
+                                                        $url3       = sprintf('%s/%s', $userMenu3['url_controller'], $userMenu3['url_view']);
+                                                        $url3_      = array();
+                                                        $url3_array = array($url3);
+
+                                                        if (strpos($userMenu3['url_parameter'], ',')) {
+
+                                                            $url3_parameters = explode(',', $userMenu3['url_parameter']);
+
+                                                            $url3_param_array = [];
+
+                                                            foreach ($url3_parameters as $key2 => $url3_parameter) {
+
+                                                                if (strpos($url3_parameter, '=')) {
+
+                                                                    $param = explode('=', $url3_parameter);
+
+                                                                    $url3_param_array[trim($param[0])] = trim($param[1]);
+                                                                }
+                                                                
+                                                            }
+
+                                                            $url3_ = array_merge($url3_array, $url3_param_array);
+
+                                                        } else {
+
+                                                            $url3_param_array = [];
+
+                                                            if (strpos($userMenu3['url_parameter'], '=')) {
+
+                                                                $param = explode('=', $userMenu3['url_parameter']);
+
+                                                                $url3_param_array[trim($param[0])] = trim($param[1]);
+
+                                                            }
+
+                                                            $url3_ = array_merge($url3_array, $url3_param_array);
+
+                                                        }
+
+                                                        switch ($userMenu3['class']) {
+                                                            case 'L':
+                                                                $menuItems3[] = [
+                                                                    'label' => $userMenu3['name'],
+                                                                    'url' => $url3_
+                                                                ];
+                                                            break;
+
+                                                            case 'S':
+                                                                /* MENU LEVEL 4 */
+                                                            break;
+                                                            
+                                                            default:
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            $menuItems3[] = [
+                                                'label' => $userMenu2['name'],
+                                                'url' => '#',
+                                                'items' => $menuItems3,
+                                            ];
+
+                                        break;
+                                        
+                                        default:
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        $menuItems[] = [
+                            'label' => $userMenu['name'],
+                            'url' => '#',
+                            'items' => $menuItems2,
+                        ];
+                    
+                    break;
+
+                    default:
+                    break;
+                }
             }
         }
     }
-    
+
     // all menu from db automatic sign in here 
     if (Yii::$app->user->isGuest) {
-        $menuItems[] = ['label' => 'Signup', 'url' => ['/site/signup']];
         $menuItems[] = ['label' => 'Login', 'url' => ['/site/login']];
     } else {
         $menuItems[] = ['label' => 'Profile', 'url' => ['/user/view', 'id' => Yii::$app->user->identity->id]];
@@ -109,7 +287,9 @@ $this->title = Yii::t('app', 'mosque_hub');
     }
     
     echo Nav::widget([
-        'options' => ['class' => 'navbar-nav ml-auto'],
+        'options' => [
+            'class' => 'navbar-nav ml-auto'
+        ],
         'items' => $menuItems,
         'encodeLabels' => false,
         'activateItems' => true,
@@ -131,7 +311,7 @@ $this->title = Yii::t('app', 'mosque_hub');
 <footer class="footer">
     <div class="container">
         <p class="float-left">&copy; <?= Html::encode(Yii::$app->name) ?> <?= date('Y') ?></p>
-        <p class="float-right"><?= Yii::powered() ?></p>
+        <p class="float-right"><?= 'Powered By Divsite Teknologi' ?></p>
     </div>
 </footer>
 

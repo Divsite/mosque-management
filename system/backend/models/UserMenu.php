@@ -22,6 +22,8 @@ use Yii;
  */
 class UserMenu extends \yii\db\ActiveRecord
 {
+    const VISITORS = 0; 
+    const NON_VISITORS = 1; 
     /**
      * {@inheritdoc}
      */
@@ -36,7 +38,7 @@ class UserMenu extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_sub', 'id_sub2', 'seq'], 'integer'],
+            [['id_sub', 'id_sub2', 'seq', 'guest'], 'integer'],
             [['level', 'module'], 'required'],
             [['class'], 'string'],
             [['level', 'module', 'url_controller', 'url_view', 'url_parameter', 'icon', 'name'], 'string', 'max' => 50],
@@ -61,6 +63,7 @@ class UserMenu extends \yii\db\ActiveRecord
             'seq' => 'Sequence',
             'icon' => 'Icon',
             'name' => 'Name',
+            'guest' => 'Pengunjung?'
         ];
     }
 }

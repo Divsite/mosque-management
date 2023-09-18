@@ -5,7 +5,7 @@ return [
     // Timezone
     'timeZone' => 'Asia/Jakarta',
     // Name
-    'name' => 'Islamic Center Al-Amanah',
+    'name' => 'Nexcity',
 
     'aliases' => [
         '@bower' => '@vendor/bower-asset',

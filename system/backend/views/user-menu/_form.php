@@ -25,8 +25,8 @@ $select_level = ArrayHelper::map(UserLevel::find()->asArray()->all(), function($
 );
 
 $select_menu = array(0 => 'NONE') + ArrayHelper::map(UserMenu::find()->asArray()->all(),'id', function($model, $defaultValue) {
-
-        return sprintf('%s (%s)', $model['name'], $model['class']);
+        $module = $model['module'] === 'app-frontend-webapps' ? 'Frontend' : 'Backend';
+        return sprintf('%s (%s) (%s)', $model['name'], $model['class'], $module);
     }
 );
 
@@ -267,6 +267,8 @@ foreach ($frontend_controllerlist as $frontend_controller)
                     ],
                 ]);
             ?>
+            
+            <?= $form->field($model, 'guest')->checkbox(['value' => UserMenu::VISITORS]); ?>
             
         </div>    
 
