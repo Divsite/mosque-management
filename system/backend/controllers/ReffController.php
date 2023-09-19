@@ -153,10 +153,19 @@ class ReffController extends \yii\web\Controller
     {
         $resident  = "<option value=''>-</option>";
 
+        $currentYear = date('Y');
+
+        $residentOnyear = (new \yii\db\Query())
+            ->select('resident_id')
+            ->from('receiver_resident')
+            ->leftJoin('receiver', 'receiver_resident.receiver_id = receiver.id')
+            ->where(['receiver.registration_year' => $currentYear]);
+
         $model = Resident::find()
                 ->where(['village_id' => $village])
                 ->andWhere(['citizen_association_id' => $citizen])
                 ->andWhere(['neighborhood_association_id' => $neighborhood])
+                ->andWhere(['NOT IN', 'id', $residentOnyear])
                 ->with('user')
                 ->asArray()
                 ->all();

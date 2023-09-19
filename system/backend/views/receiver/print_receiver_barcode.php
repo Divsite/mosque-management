@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use backend\models\Receiver;
+use backend\models\ReceiverType;
 use barcode\barcode\BarcodeGenerator;
 use yii\helpers\Url;
 
@@ -27,7 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         
                         $receiver = Receiver::find()
                         ->with(['receiverType', 'branch'])
-                        ->where(['branch_code' => Yii::$app->user->identity->code])
+                        ->where(['branch_code' => Yii::$app->user->identity->code, 'receiver_type_id' => ReceiverType::SACRIFICE])
                         ->all();
                         
                         echo '<div class="row">';

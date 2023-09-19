@@ -43,8 +43,8 @@ class Receiver extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['receiver_type_id', 'citizens_association_id', 'village_id', 'neighborhood_association_id'], 'required'],
-            [['receiver_type_id', 'receiver_class_id', 'user_id', 'citizens_association_id', 'neighborhood_association_id', 'status', 'resident_id', 'officer_id', 'village_id'], 'integer'],
+            [['receiver_type_id'], 'required'],
+            [['receiver_type_id', 'receiver_class_id', 'user_id', 'status',], 'integer'],
             [['desc'], 'string'],
             [['registration_year', 'status_update', 'timestamp'], 'safe'],
             [['barcode_number'], 'string', 'max' => 255],
@@ -74,8 +74,6 @@ class Receiver extends \yii\db\ActiveRecord
             'clock' => Yii::t('app', 'clock'),
             'user_id' => Yii::t('app', 'user_id'),
             'branch_code' => Yii::t('app', 'branch_code'),
-            'resident_id' => Yii::t('app', 'resident_id'),
-            'officer_id' => Yii::t('app', 'officer_id'),
             'village_id' => Yii::t('app', 'village_id'),
             'timestamp' => Yii::t('app', 'timestamp'),
         ];
@@ -94,6 +92,11 @@ class Receiver extends \yii\db\ActiveRecord
     public function getUser()
     {
         return $this->hasOne(User::class, ['id' => 'user_id']);
+    }
+
+    public function getVillage()
+    {
+        return $this->hasOne(Village::class, ['id' => 'village_id']);
     }
     
     public function getCitizens()
@@ -177,5 +180,27 @@ class Receiver extends \yii\db\ActiveRecord
                     'branch_code' => Yii::$app->user->identity->code,
                 ])
                 ->count();
+    }
+
+    public function getResident()
+    {
+        return $this->hasMany(Resident::class, ['id' => 'resident_id'])
+            ->viaTable('receiver_resident', ['receiver_id' => 'id']);
+    }
+    
+    public function getOfficer()
+    {
+        return $this->hasMany(Officer::class, ['id' => 'officer_id'])
+            ->viaTable('receiver_officer', ['receiver_id' => 'id']);
+    }
+
+    public function listOfficers()
+    {
+        return ReceiverOfficer::find()->all();
+    }
+
+    public function listResidents()
+    {
+        return ReceiverResident::find()->all();
     }
 }

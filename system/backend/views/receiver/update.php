@@ -6,10 +6,10 @@ use yii\helpers\Html;
 /* @var $model backend\models\Receiver */
 
 $this->title = Yii::t('app', 'Update Receiver: {name}', [
-    'name' => $model->name,
+    'receiver_type_id' => $model->receiver_type_id,
 ]);
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Receivers'), 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
+$this->params['breadcrumbs'][] = ['label' => $model->receiver_type_id, 'url' => ['view', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = Yii::t('app', 'Update');
 ?>
 <div class="receiver-update">

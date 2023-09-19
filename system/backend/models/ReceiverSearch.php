@@ -18,7 +18,7 @@ class ReceiverSearch extends Receiver
     public function rules()
     {
         return [
-            [['id', 'receiver_type_id', 'receiver_class_id', 'citizens_association_id', 'neighborhood_association_id', 'status'], 'integer'],
+            [['id', 'receiver_type_id', 'receiver_class_id', 'village_id', 'citizens_association_id', 'neighborhood_association_id', 'status'], 'integer'],
             [['desc', 'registration_year', 'barcode_number', 'timestamp'], 'safe'],
         ];
     }
@@ -72,17 +72,16 @@ class ReceiverSearch extends Receiver
         $query->andFilterWhere([
             'id' => $this->id,
             'receiver_type_id' => $this->receiver_type_id,
-            'receiver_class_id' => $this->receiver_class_id,
+            'user_id' => $this->user_id,
+            'village_id' => $this->village_id,
             'citizens_association_id' => $this->citizens_association_id,
             'neighborhood_association_id' => $this->neighborhood_association_id,
             'registration_year' => $this->registration_year,
-            'status' => $this->status,
             'timestamp' => $this->timestamp,
         ]);
 
-        $query
-            ->andFilterWhere(['like', 'desc', $this->desc])
-            ->andFilterWhere(['like', 'barcode_number', $this->barcode_number]);
+        // $query
+        //     ->andFilterWhere(['like', 'registration_year', $this->registration_year]);
 
         return $dataProvider;
     }
