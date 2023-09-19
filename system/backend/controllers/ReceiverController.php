@@ -7,9 +7,10 @@ use backend\models\Receiver;
 use backend\models\ReceiverSearch;
 use backend\models\ReceiverType;
 use backend\models\Branch;
+use backend\models\Officer;
 use backend\models\ReceiverClass;
-// use backend\models\CitizensAssociation;
-// use backend\models\NeighborhoodAssociation;
+use backend\models\ReceiverResident;
+use backend\models\Resident;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -102,27 +103,72 @@ class ReceiverController extends Controller
         $model = new Receiver();
 
         $qty = Yii::$app->request->post('qty');
-        
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
 
-            // var_dump($model->clock);
-            // die;
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $villageCharity = Yii::$app->request->post()['Receiver']['village_id']['charity'];
+            $citizenCharity = Yii::$app->request->post()['Receiver']['citizens_association_id']['charity'];
+            $neighborhoodCharity = Yii::$app->request->post()['Receiver']['neighborhood_association_id']['charity'];
             
-            // declare
+            $villageVictim = Yii::$app->request->post()['Receiver']['village_id']['victim'];
+            $citizenVictim = Yii::$app->request->post()['Receiver']['citizens_association_id']['victim'];
+            $neighborhoodVictim = Yii::$app->request->post()['Receiver']['neighborhood_association_id']['victim'];
+            
             $receiverType = ReceiverType::find()->where(['id' => $model->receiver_type_id])->one();
             $branch = Branch::find()->where(['code' => Yii::$app->user->identity->code])->one();
-            // $citizensAssociation = CitizensAssociation::find()->where(['id' => $model->citizens_association_id])->one();
-            // $neighborhoodAssociation = NeighborhoodAssociation::find()->where(['id' => $model->neighborhood_association_id])->one();
             $registrationYear = date('Y');
 
             if ($model->receiver_type_id == ReceiverType::ZAKAT) {
+
+                $residentCharity = Yii::$app->request->post()['receiver-resident_id'];
+                $officerCharity = Yii::$app->request->post()['receiver-officer_id'];
 
                 $barcodeNumberResult = $receiverType->code .'-'.  
                 $branch->code . '-' . 
                 $model->generateRunningNumberByBranchAndType($receiverType, $branch);
 
                 $model->barcode_number = $barcodeNumberResult;
+
+                $model->user_id = Yii::$app->user->identity->id;
+                $model->branch_code = $branch->code;
+
+                $model->registration_year = $registrationYear;
+
+                $model->village_id = [
+                    'charity' => $villageCharity,
+                    'victim' => null,
+                ];
+                $model->citizens_association_id = [
+                    'charity' => $citizenCharity,
+                    'victim' => null,
+                ];
+                $model->neighborhood_association_id = [
+                    'charity' => $neighborhoodCharity,
+                    'victim' => null,
+                ];
+
+                $model->status = Receiver::NOT_CLAIM;
+                $model->status_update = date('Y-m-d H:i:s');
+
                 $model->save(false);
+
+                if (!empty($residentCharity)) {
+                    foreach ($residentCharity as $residentId) {
+                        $resident = Resident::findOne($residentId);
+                        if ($resident !== null) {
+                            $model->link('resident', $resident);
+                        }
+                    }
+                }
+                
+                if (!empty($officerCharity)) {
+                    foreach ($officerCharity as $officerId) {
+                        $officer = Officer::findOne($officerId);
+                        if ($officer !== null) {
+                            $model->link('officer', $officer);
+                        }
+                    }
+                }
+
             }
             
             
@@ -142,11 +188,22 @@ class ReceiverController extends Controller
                     $receiver->user_id = Yii::$app->user->identity->id;
                     $receiver->branch_code = $branch->code;
                     $receiver->registration_year = $registrationYear;
-                    $receiver->citizens_association_id = $model->citizens_association_id;
-                    $receiver->neighborhood_association_id = $model->neighborhood_association_id;
                     $receiver->status = Receiver::NOT_CLAIM;
                     $receiver->status_update = date('Y-m-d H:i:s');
                     $receiver->clock = $model->clock;
+                    
+                    $receiver->village_id = [
+                        'charity' => null,
+                        'victim' => $villageVictim,
+                    ];
+                    $receiver->citizens_association_id = [
+                        'charity' => null,
+                        'victim' => $citizenVictim,
+                    ];
+                    $receiver->neighborhood_association_id = [
+                        'charity' => null,
+                        'victim' => $neighborhoodVictim,
+                    ];
                     
                     $receiver->save(false);
                 }
@@ -372,6 +429,45 @@ class ReceiverController extends Controller
     public function actionReport()
     {
         
+    }
+
+    public function actionAlmsCouponClaim($id, $status, $receiverId)
+    {
+        $receiver = $this->findModel($receiverId);
+
+        $model = ReceiverResident::findOne($id);
+
+        $model->status = $status;
+        $model->status_update = date('Y-m-d h:i:s');
+        
+        if ($model->save(false)) {
+            Yii::$app->getSession()->setFlash('receiver_resident_status_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'system_information'),
+                'message'  => Yii::t('app', 'coupon_success_claimed'),
+            ]);
+            return $this->redirect(['view', 'id' => $receiver->id]);
+        }
+        else
+        {
+            if ($model->errors)
+            {
+                $message = "";
+                foreach ($model->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2;
+                    }
+                }
+                Yii::$app->getSession()->setFlash('receiver_resident_status_failed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
+        }
     }
 
 }
