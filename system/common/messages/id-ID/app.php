@@ -242,5 +242,11 @@
         'select_package' => 'Pilih Paket',
         'village_id' => 'Kelurahan/Desa',
         'select_village' => 'Pilih Kelurahan/Desa',
+        'sacrifice' => 'Qurban',
+        'alms' => 'Zakat',
+        'not_yet_update' => 'Belum ada pembaruan',
+        'has_been_distributed' => 'Sudah di Distribusikan',
+        'status_distribution' => 'Status Distribusi',
+        'status_update' => 'Status Pembaruan',
     ];
 ?>
