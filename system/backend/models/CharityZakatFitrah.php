@@ -33,7 +33,7 @@ class CharityZakatFitrah extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['charity_id'], 'required'],
+            [['charity_zakat_fitrah_package_id'], 'integer'],
             [['charity_id'], 'integer'],
             [['customer_address'], 'string'],
             [['payment_total'], 'number'],
@@ -50,6 +50,7 @@ class CharityZakatFitrah extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'charity_id' => Yii::t('app', 'Charity ID'),
+            'charity_zakat_fitrah_package_id' => Yii::t('app', 'Charity Package'),
             'customer_name' => Yii::t('app', 'customer_name'),
             'customer_email' => Yii::t('app', 'customer_email'),
             'customer_address' => Yii::t('app', 'customer_address'),

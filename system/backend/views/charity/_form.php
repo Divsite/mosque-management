@@ -53,10 +53,10 @@ use yii\widgets\ActiveForm;
     ?>
 
     <div id="manually" <?= $model->type == Charity::CHARITY_TYPE_AUTOMATIC ? '' : 'style="display: none"' ?>>
-
-        <?= $this->render('form_manually', [
-            'charityManually' => $charityManually,
+    
+        <?= $this->render('_form_manually', [
             'form' => $form,
+            'charityManually' => $charityManually,
         ]) ?>
 
     </div>

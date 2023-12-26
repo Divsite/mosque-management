@@ -113,11 +113,126 @@ class CharityController extends Controller
         $charitySodaqoh = new CharitySodaqoh();
         $charityZakatMal = new CharityZakatMal();
         $charityWaqaf = new CharityWaqaf();
+        
+        // store
+        $transaction = Yii::$app->db->beginTransaction();
+        try {
+            if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+                
+                // MANUAL
+                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                    $model->branch_code = Yii::$app->user->identity->code;
+                    $model->year = date('Y');
+                    $model->created_at = date('Y-m-d h:i:s');
+                    $model->updated_at = date('Y-m-d h:i:s');
+                    $model->created_by = Yii::$app->user->identity->id;
+                    $model->updated_by = Yii::$app->user->identity->id;
+                    $model->save();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+                    if ($charityManually->load(Yii::$app->request->post()) && $charityManually->validate()) {
+                        $charityManually->charity_id = $model->id;
+                        $charityManually->payment_date = date('Y-m-d h:i:s');
+                        $charityManually->save();
+
+                        Yii::$app->getSession()->setFlash('successfully_added_form_manual', [
+                                'type'     => 'success',
+                                'duration' => 5000,
+                                'title'    => Yii::t('app', 'system_information'),
+                                'message'  => 'successfully_added_form_manual',
+                            ]
+                        );
+                    } else {
+                        $message = "";
+                        foreach ($charityManually->errors as $key => $value) {
+                            foreach ($value as $key1 => $value2) {
+                                $message .= $value2 . "<br>";
+                            }
+                        }
+                        Yii::$app->getSession()->setFlash('failed_to_add_form_manual', [
+                                'type'     => 'error',
+                                'duration' => 5000,
+                                'title'    => Yii::t('app', 'error'),
+                                'message'  => $message,
+                            ]
+                        );
+
+                        throw new \Exception("failed_to_add_form_manual");
+                    }
+                }
+
+                // AUTOMATIC
+                if ($model->type == Charity::CHARITY_TYPE_AUTOMATIC) {
+                    $model->branch_code = Yii::$app->user->identity->code;
+                    $model->year = date('Y');
+                    $model->created_at = date('Y-m-d h:i:s');
+                    $model->updated_at = date('Y-m-d h:i:s');
+                    $model->created_by = Yii::$app->user->identity->id;
+                    $model->updated_by = Yii::$app->user->identity->id;
+                    $model->save();
+
+                    if ($charityZakatFitrah->load(Yii::$app->request->post()) && $charityZakatFitrah->validate()) {
+                        $charityZakatFitrah->charity_id = $model->id;
+                        // echo "<pre>";
+                        // var_dump($charityZakatFitrah);
+                        // die;
+                        $charityZakatFitrah->payment_date = date('Y-m-d h:i:s');
+                        $charityZakatFitrah->save();
+
+                        Yii::$app->getSession()->setFlash('successfully_added_zakat_fitrah_form', [
+                                'type'     => 'success',
+                                'duration' => 5000,
+                                'title'    => Yii::t('app', 'system_information'),
+                                'message'  => 'successfully_added_zakat_fitrah_form',
+                            ]
+                        );
+                    } else {
+                        $message = "";
+                        foreach ($charityZakatFitrah->errors as $key => $value) {
+                            foreach ($value as $key1 => $value2) {
+                                $message .= $value2 . "<br>";
+                            }
+                        }
+                        Yii::$app->getSession()->setFlash('failed_to_add_zakat_fitrah_form', [
+                                'type'     => 'error',
+                                'duration' => 5000,
+                                'title'    => Yii::t('app', 'error'),
+                                'message'  => $message,
+                            ]
+                        );
+
+                        throw new \Exception("failed_to_add_zakat_fitrah_form");
+                    }
+                }
+
+                $transaction->commit();
+                return $this->redirect(['index']);
+            }
+            else
+            {
+                if ($model->errors)
+                {
+                    $message = "";
+                    foreach ($model->errors as $key => $value) {
+                        foreach ($value as $key1 => $value2) {
+                            $message .= $value2 . "<br>";
+                        }
+                    }
+                    Yii::$app->getSession()->setFlash('failed_to_save_charity', [
+                            'type'     => 'error',
+                            'duration' => 5000,
+                            'title'  => Yii::t('app', 'error'),
+                            'message'  => $message,
+                        ]
+                    );
+
+                    throw new \Exception("failed_to_save_charity");
+                }
+            } 
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+            Yii::error("Transaction failed: " . $e->getMessage());
         }
-
+        
         return $this->render('create', [
             'model' => $model,
             'charityManually' => $charityManually,
