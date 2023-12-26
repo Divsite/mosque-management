@@ -1,6 +1,7 @@
-<?php 
+<?php
 use kartik\money\MaskMoney;
 ?>
+
 <div class="row">
 
     <div class="col-lg-4">
