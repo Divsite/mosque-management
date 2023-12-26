@@ -63,4 +63,9 @@ class Charity extends \yii\db\ActiveRecord
     {
         return $this->hasOne(CharityType::class, ['id' => 'type_charity_id']);
     }
+
+    public function getCharityManually()
+    {
+        return $this->hasOne(CharityManually::class, ['charity_id' => 'id']);
+    }
 }

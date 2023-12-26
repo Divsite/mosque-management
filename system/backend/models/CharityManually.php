@@ -33,11 +33,12 @@ class CharityManually extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['charity_id'], 'required'],
+            // [['charity_id'], 'required'],
             [['charity_id'], 'integer'],
             [['customer_address'], 'string'],
             [['payment_total'], 'number'],
             [['payment_date', 'timestamp'], 'safe'],
+            [['customer_email'], 'email'],
             [['customer_name', 'customer_email', 'customer_number'], 'string', 'max' => 255],
         ];
     }
@@ -58,5 +59,10 @@ class CharityManually extends \yii\db\ActiveRecord
             'payment_date' => Yii::t('app', 'Payment Date'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
+    }
+
+    public function getCharity()
+    {
+        return $this->hasOne(Charity::class, ['id' => 'charity_id']);
     }
 }

@@ -18,23 +18,21 @@ use yii\helpers\Url;
     </div>
 
     <?= Html::label(Yii::t('app', 'select_package'), 'package', ['class' => 'control-label']) ?>
-    <?= Select2::widget([
-        'id' => 'zakat_fitrah_package',
-        'name' => 'zakat_fitrah_package',
+    <?= $form->field($charityZakatFitrah, 'charity_zakat_fitrah_package_id')->widget(Select2::classname(),[
         'data' => ArrayHelper::map(CharityZakatFitrahPackage::find()->all(), 'id', 'name'),
-        'value' => $charityZakatFitrah->charity_zakat_fitrah_package_id,
-        'options' => [
-            'placeholder' => Yii::t('app', 'select_package'),
-            'onChange' => '$.post("' . Url::base() . '/charity/package-calculation?id=" + $(this).val() + "&type_charity_id=" + $("#type_charity_id").val(), function(data) {
-                what = JSON.parse(data);
-                console.log(what.payment_total_package)
-                $("#payment_total_package").val(what.payment_total_package).trigger("input");
-            });',
-        ],
-        'pluginOptions' => [
-            'allowClear' => false
-        ],
-    ]) ?>
+            'options' => [
+                'placeholder' => Yii::t('app', 'select_package'),
+                'onChange' => '$.post("' . Url::base() . '/charity/package-calculation?id=" + $(this).val() + "&type_charity_id=" + $("#type_charity_id").val(), function(data) {
+                    what = JSON.parse(data);
+                    console.log(what.payment_total_package)
+                    $("#payment_total_package").val(what.payment_total_package).trigger("input");
+                });',
+            ],
+            'pluginOptions' => [
+                'allowClear' => false
+            ],
+        ]);
+    ?>
 
     <?= $form->field($charityZakatFitrah, 'payment_total')->textInput([
             'id' => 'payment_total_package',
