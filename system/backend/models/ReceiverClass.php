@@ -15,6 +15,9 @@ use Yii;
  */
 class ReceiverClass extends \yii\db\ActiveRecord
 {
+    const ACTIVE = 1;
+    const NONACTIVE = 0;
+
     /**
      * {@inheritdoc}
      */
@@ -29,9 +32,10 @@ class ReceiverClass extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name'], 'required'],
+            [['branch_code', 'name'], 'required'],
             [['get_money'], 'number'],
-            [['get_rice'], 'integer'],
+            [['get_rice', 'is_active'], 'integer'],
+            [['branch_code'], 'string', 'max' => 50],
             [['timestamp'], 'safe'],
             [['name'], 'string', 'max' => 255],
         ];
@@ -45,8 +49,10 @@ class ReceiverClass extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
+            'branch_code' => Yii::t('app', 'branch_code'),
             'get_money' => Yii::t('app', 'Get Money'),
             'get_rice' => Yii::t('app', 'Get Rice'),
+            'is_active' => Yii::t('app', 'is_active'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
     }

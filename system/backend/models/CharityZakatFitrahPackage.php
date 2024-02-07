@@ -14,6 +14,9 @@ use Yii;
  */
 class CharityZakatFitrahPackage extends \yii\db\ActiveRecord
 {
+    const ACTIVE = 1;
+    const NONACTIVE = 0;
+
     /**
      * {@inheritdoc}
      */
@@ -28,9 +31,10 @@ class CharityZakatFitrahPackage extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'value'], 'required'],
-            [['value'], 'integer'],
+            [['name', 'value', 'branch_code'], 'required'],
+            [['value', 'is_active'], 'integer'],
             [['timestamp'], 'safe'],
+            [['branch_code'], 'string', 'max' => 50],
             [['name'], 'string', 'max' => 255],
         ];
     }
@@ -43,7 +47,9 @@ class CharityZakatFitrahPackage extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
+            'branch_code' => Yii::t('app', 'branch_code'),
             'value' => Yii::t('app', 'Value'),
+            'is_active' => Yii::t('app', 'is_active'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
     }
