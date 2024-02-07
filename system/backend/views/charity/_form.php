@@ -30,7 +30,10 @@ use yii\widgets\ActiveForm;
     ?>
 
     <?= $form->field($model, 'type_charity_id', ['inputOptions'=>['id'=>'type_charity_id']])->widget(Select2::classname(),[
-        'data' => ArrayHelper::map(CharityType::find()->all(), 'id', 'name'),
+        'data' => ArrayHelper::map(CharityType::find()->where([
+            'branch_code' => Yii::$app->user->identity->code,
+            'is_active' => CharityType::ACTIVE
+        ])->all(), 'id', 'name'),
         'options' => [
             'placeholder' => Yii::t('app', 'select_type'),
             'value' => $model->type_charity_id,

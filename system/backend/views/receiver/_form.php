@@ -25,7 +25,10 @@ use backend\models\Village;
     <?php $form = ActiveForm::begin(); ?>
 
     <?= $form->field($model, 'receiver_type_id', ['inputOptions'=>['id'=>'receiver_type_id']])->widget(Select2::classname(),[
-            'data' => ArrayHelper::map(ReceiverType::find()->all(), 'id', 'name'),
+            'data' => ArrayHelper::map(ReceiverType::find()->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'is_active' => ReceiverType::ACTIVE,
+            ])->all(), 'id', 'name'),
             'options' => [
                 'placeholder' => Yii::t('app', 'select_type'),
                 'value' => $model->receiver_type_id,
@@ -41,7 +44,10 @@ use backend\models\Village;
         <div class="row">
             <div class="col-lg-6">
                 <?= $form->field($model, 'receiver_class_id')->widget(Select2::classname(),[
-                        'data' => ArrayHelper::map(ReceiverClass::find()->all(), 'id', 'name'),
+                        'data' => ArrayHelper::map(ReceiverClass::find()->where([
+                            'branch_code' => Yii::$app->user->identity->code,
+                            'is_active' => ReceiverClass::ACTIVE,
+                        ])->all(), 'id', 'name'),
                         'options' => [
                             'placeholder' => Yii::t('app', 'select_class'),
                             'value' => $model->receiver_class_id,
