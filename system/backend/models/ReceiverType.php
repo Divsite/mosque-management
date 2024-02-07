@@ -13,6 +13,8 @@ use Yii;
  */
 class ReceiverType extends \yii\db\ActiveRecord
 {
+    const ACTIVE = 1;
+    const NONACTIVE = 0;
 
     const ZAKAT = 1;
     const SACRIFICE = 2;
@@ -30,9 +32,11 @@ class ReceiverType extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['branch_code'], 'required'],
+            [['is_active'], 'integer'],
             [['timestamp'], 'safe'],
             [['name'], 'string', 'max' => 255],
-            [['code'], 'string', 'max' => 50],
+            [['code', 'branch_code'], 'string', 'max' => 50],
         ];
     }
 
@@ -44,6 +48,9 @@ class ReceiverType extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
+            'code' => Yii::t('app', 'code'),
+            'branch_code' => Yii::t('app', 'branch_code'),
+            'is_active' => Yii::t('app', 'is_active'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
     }
