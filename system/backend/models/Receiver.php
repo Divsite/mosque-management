@@ -116,19 +116,29 @@ class Receiver extends \yii\db\ActiveRecord
 
     public function generateRunningNumberByBranchAndType($receiverType, $branch)
     {
+        $defaultDigit  = 2; // < 10, example : 01-09
+        
         $queryBarcode = Receiver::find()
                 ->where(['receiver_type_id' => $receiverType->id])
                 ->andWhere(['branch_code' => $branch->code])
-                ->count() + 1;
+                ->orderBy(['id' => SORT_DESC])
+                ->one();
 
-        $code_digit  = 3;
+        if (!$queryBarcode) { // handle to null on db
+            return str_pad($this->id . 1 , $defaultDigit, '0', STR_PAD_LEFT);
+        }  else { // next data exist 
+            $lastRunningNumber = explode('-', $queryBarcode->barcode_number);
+            $lastRunningNumber = end($lastRunningNumber); // get last digit from barcode number
 
-        if ($queryBarcode == null) {
-            return str_pad($this->id . 1 , $code_digit, '0', STR_PAD_LEFT);
-        } else {
-            $running_number = str_pad($queryBarcode, $code_digit, '0', STR_PAD_LEFT);
-            return $running_number;
+            if ($lastRunningNumber < 10) {
+                $nextRunningNumber = str_pad((int)$lastRunningNumber + 1, $defaultDigit, '0', STR_PAD_LEFT);
+            } else {
+                $calculateCodeDigit = strlen((int)$lastRunningNumber); // get length digit
+                $nextRunningNumber = str_pad((int)$lastRunningNumber + 1, $calculateCodeDigit, '0', STR_PAD_LEFT);
+            }
         }
+
+        return $nextRunningNumber;
     }
 
     public function getStatus()
