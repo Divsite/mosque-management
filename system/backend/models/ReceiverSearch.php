@@ -58,6 +58,11 @@ class ReceiverSearch extends Receiver
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => [
+                'defaultOrder' => [
+                    'timestamp' => SORT_DESC,
+                ],
+            ],
         ]);
 
         $this->load($params);

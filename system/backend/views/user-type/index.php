@@ -1,5 +1,6 @@
 <?php
 
+use backend\models\UserType;
 use yii\helpers\Html;
 use yii\grid\GridView;
 
@@ -44,6 +45,21 @@ $this->params['breadcrumbs'][] = $this->title;
 
                             'code',
                             'table',
+                            [
+                                'format' => 'raw',
+                                'attribute' => 'is_partner',
+                                'value' => function ($model) {
+                                    if ($model->is_partner == UserType::YES_PARTNER) {
+                                        return '<i class="fa fa-check"></i>';
+                                    } else {
+                                        return '<i class="fa fa-times"></i>';
+                                    }
+                                },
+                                'filter'=> [
+                                    0 => 'NO',
+                                    1 => 'YES',
+                                ],
+                            ],
 
                             ['class' => 'yii\grid\ActionColumn'],
                         ],

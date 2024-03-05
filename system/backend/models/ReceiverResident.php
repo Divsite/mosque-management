@@ -15,8 +15,9 @@ use Yii;
  */
 class ReceiverResident extends \yii\db\ActiveRecord
 {
-    const NOT_CLAIM = 1;
-    const CLAIM = 2;
+    const NOT_YET_SHARED = 1;
+    const SHARED = 2;
+    const NOT_SHARED = 3;
     /**
      * {@inheritdoc}
      */
@@ -31,6 +32,8 @@ class ReceiverResident extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['reason'], 'required'],
+            [['reason'], 'string', 'max' => 255],
             [['receiver_id', 'resident_id', 'status'], 'integer'],
             [['created_at', 'updated_at', 'status_update'], 'safe'],
         ];
@@ -45,6 +48,7 @@ class ReceiverResident extends \yii\db\ActiveRecord
             'id' => Yii::t('app', 'ID'),
             'receiver_id' => Yii::t('app', 'Receiver ID'),
             'resident_id' => Yii::t('app', 'Resident ID'),
+            'reason' => Yii::t('app', 'reason'),
             'status' => Yii::t('app', 'status'),
             'status_update' => Yii::t('app', 'status_update'),
             'created_at' => Yii::t('app', 'Created At'),

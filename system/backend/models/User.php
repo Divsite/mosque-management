@@ -80,4 +80,21 @@ class User extends \yii\db\ActiveRecord
             'verification_token' => Yii::t('app', 'verification_token'),
         ];
     }
+
+    public function getResidents()
+    {
+        return $this->hasMany(Resident::class, ['user_id' => 'id']);
+    }
+    
+    public function getOfficers()
+    {
+        return $this->hasMany(Officer::class, ['user_id' => 'id']);
+    }
+
+    public static function findResidentsByCode($code)
+    {
+        return static::find()
+            ->where(['code' => $code])
+            ->all();
+    }
 }

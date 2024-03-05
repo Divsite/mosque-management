@@ -84,14 +84,24 @@ class ReffController extends \yii\web\Controller
             switch ($code) 
             {
                 case 'B':
-                    $data_code = Branch::find()->asArray()->all();
+                    $data_code = Branch::find()
+                                ->with('branchCategory')
+                                ->asArray()
+                                ->all();
                     break;
 
-                case 'C':
+                case 'P':
                     $data_code = Customer::find()->asArray()->all();
                     break;
                 
                 case 'W':
+                    $data_code = Populate::find()
+                                ->with('village', 'citizenAssociation', 'neighborhoodAssociation')
+                                ->asArray()
+                                ->all();
+                    break;
+                
+                case 'L':
                     $data_code = Populate::find()
                                 ->with('village', 'citizenAssociation', 'neighborhoodAssociation')
                                 ->asArray()
@@ -107,8 +117,6 @@ class ReffController extends \yii\web\Controller
         }
 
         return $callback;
-        
-        // return json_encode($callback);
     }
 
     public function actionCitizens($id)
@@ -217,6 +225,48 @@ class ReffController extends \yii\web\Controller
     			'district' => $district,
     		)
     	);
+    }
+
+    public function actionUserLevel($code, $type)
+    {
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $callback = [
+            'status' => false, 
+            'message' => 'Unknown Error'
+        ];
+
+        if ($code)
+        {
+            $callback['status']  = true;
+            $callback['message'] = 'Success';
+
+            switch ($type) {
+                case 'B':
+                    $dataLevel = UserLevel::find()
+                        ->where(['partner_code' => $code])
+                        ->asArray()
+                        ->all();
+                    break;
+                case 'W':
+                    $dataLevel = UserLevel::find()
+                        ->where(['type' => UserType::RESIDENT])
+                        ->one();
+                    break;
+                case 'L':
+                    $dataLevel = UserLevel::find()
+                        ->where(['type' => UserType::ENV])
+                        ->one();
+                    break;
+                default:
+                    $dataLevel = [];
+                    break;
+            }
+            
+            $callback['data_level']  = $dataLevel;
+        }
+
+        return $callback;
     }
 
 }

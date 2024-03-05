@@ -15,8 +15,13 @@ use Yii;
 class UserType extends \yii\db\ActiveRecord
 {
     const BRANCH = 'B';
-    const CUSTOMER = 'C';
+    const CUSTOMER = 'P';
     const RESIDENT = 'W';
+    const ENV = 'L';
+
+    const YES_PARTNER = 1;
+    const NO_PARTNER = 0;
+
     /**
      * {@inheritdoc}
      */
@@ -35,6 +40,7 @@ class UserType extends \yii\db\ActiveRecord
             [['code'], 'string', 'max' => 2],
             [['table'], 'string', 'max' => 50],
             [['code'], 'unique'],
+            [['is_partner'], 'integer'],
         ];
     }
 
@@ -46,6 +52,7 @@ class UserType extends \yii\db\ActiveRecord
         return [
             'code' => 'Code',
             'table' => 'Table',
+            'is_partner' => 'Partner Nexcity',
         ];
     }
 

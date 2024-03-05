@@ -86,4 +86,9 @@ class Branch extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Customer::className(), ['code_branch' => 'code']);
     }
+    
+    public function getBranchCategory()
+    {
+        return $this->hasOne(BranchCategory::className(), ['id' => 'bch_category_id']);
+    }
 }
