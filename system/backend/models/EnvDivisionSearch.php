@@ -4,12 +4,12 @@ namespace backend\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use backend\models\UserType;
+use backend\models\EnvDivision;
 
 /**
- * UserTypeSearch represents the model behind the search form of `backend\models\UserType`.
+ * EnvDivisionSearch represents the model behind the search form of `backend\models\EnvDivision`.
  */
-class UserTypeSearch extends UserType
+class EnvDivisionSearch extends EnvDivision
 {
     /**
      * {@inheritdoc}
@@ -17,8 +17,8 @@ class UserTypeSearch extends UserType
     public function rules()
     {
         return [
-            [['is_partner'], 'integer'],
-            [['code', 'table'], 'safe'],
+            [['id'], 'integer'],
+            [['name', 'obligation', 'timestamp'], 'safe'],
         ];
     }
 
@@ -40,7 +40,7 @@ class UserTypeSearch extends UserType
      */
     public function search($params)
     {
-        $query = UserType::find();
+        $query = EnvDivision::find();
 
         // add conditions that should always apply here
 
@@ -56,13 +56,14 @@ class UserTypeSearch extends UserType
             return $dataProvider;
         }
 
+        // grid filtering conditions
         $query->andFilterWhere([
-            'is_partner' => $this->is_partner,
+            'id' => $this->id,
+            'timestamp' => $this->timestamp,
         ]);
 
-        // grid filtering conditions
-        $query->andFilterWhere(['like', 'code', $this->code])
-            ->andFilterWhere(['like', 'table', $this->table]);
+        $query->andFilterWhere(['like', 'name', $this->name])
+            ->andFilterWhere(['like', 'obligation', $this->obligation]);
 
         return $dataProvider;
     }

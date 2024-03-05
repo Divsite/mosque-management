@@ -8,6 +8,7 @@ use backend\models\ReceiverClass;
 use backend\models\User;
 use backend\models\CitizensAssociation;
 use backend\models\NeighborhoodAssociation;
+use yii\db\Expression;
 use yii\helpers\Html;
 
 /**
@@ -44,6 +45,7 @@ class Receiver extends \yii\db\ActiveRecord
     {
         return [
             [['receiver_type_id'], 'required'],
+            ['receiver_class_id', 'validateUniqueReceiverClassId'],
             [['receiver_type_id', 'receiver_class_id', 'user_id', 'status',], 'integer'],
             [['desc'], 'string'],
             [['registration_year', 'status_update', 'timestamp'], 'safe'],
@@ -114,6 +116,11 @@ class Receiver extends \yii\db\ActiveRecord
         return $this->hasOne(Branch::class, ['code' => 'branch_code']);
     }
 
+    public function getReceiverResident()
+    {
+        return $this->hasOne(ReceiverResident::class, ['id' => 'resident_id']);
+    }
+
     public function generateRunningNumberByBranchAndType($receiverType, $branch)
     {
         $defaultDigit  = 2; // < 10, example : 01-09
@@ -162,6 +169,16 @@ class Receiver extends \yii\db\ActiveRecord
 
         return $status;
     }
+
+    public static function findClaimed()
+    {
+        return static::find()->where(['status' => Receiver::CLAIM]);
+    }
+
+    public static function findNotClaimed()
+    {
+        return static::find()->where(['status' => Receiver::NOT_CLAIM]);
+    }
     
     public static function getClaimStatusCouponByBranch() : int 
     {
@@ -192,25 +209,56 @@ class Receiver extends \yii\db\ActiveRecord
                 ->count();
     }
 
-    public function getResident()
+    public function getLinkedResidents()
     {
         return $this->hasMany(Resident::class, ['id' => 'resident_id'])
             ->viaTable('receiver_resident', ['receiver_id' => 'id']);
     }
     
-    public function getOfficer()
+    public function getLinkedOfficers()
     {
         return $this->hasMany(Officer::class, ['id' => 'officer_id'])
             ->viaTable('receiver_officer', ['receiver_id' => 'id']);
     }
 
-    public function listOfficers()
+    public function getReceiverOfficers()
     {
-        return ReceiverOfficer::find()->all();
+        return $this->hasMany(ReceiverOfficer::class, ['receiver_id' => 'id']);
     }
 
-    public function listResidents()
+    public function listOfficersByReceiver()
     {
-        return ReceiverResident::find()->all();
+        return $this->getReceiverOfficers()->all();
+    }
+
+    public function getReceiverResidents()
+    {
+        return $this->hasMany(ReceiverResident::class, ['receiver_id' => 'id']);
+    }
+
+    public function listResidentsByReceiver()
+    {
+        return $this->getReceiverResidents()->all();
+    }
+
+    public function getReceiverDocumentationImage()
+    {
+        return $this->hasMany(ReceiverDocumentationImage::class, ['receiver_id' => 'id']);
+    }
+
+    public function validateUniqueReceiverClassId($attribute)
+    {
+        $year = date('Y');
+        $existingReceiverClassByThisYear = Receiver::find()
+            ->where(['receiver_class_id' => $this->$attribute])
+            ->andWhere(['YEAR(registration_year)' => $year])
+            ->one();
+
+        if ($existingReceiverClassByThisYear) {
+            $receiverClassName = $existingReceiverClassByThisYear->receiverClass->name;
+            $this->addError($attribute, Yii::t('app', 'receiver_class_must_be_unique_within_the_same_year', [
+                'receiverClassName' => $receiverClassName
+            ]));
+        }
     }
 }

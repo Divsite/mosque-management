@@ -8,12 +8,16 @@ use backend\models\ReceiverSearch;
 use backend\models\ReceiverType;
 use backend\models\Branch;
 use backend\models\Officer;
+use backend\models\Populate;
 use backend\models\ReceiverClass;
+use backend\models\ReceiverDocumentationImage;
 use backend\models\ReceiverResident;
 use backend\models\Resident;
+use backend\models\User;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 /**
  * ReceiverController implements the CRUD actions for Receiver model.
@@ -155,7 +159,7 @@ class ReceiverController extends Controller
                     foreach ($residentCharity as $residentId) {
                         $resident = Resident::findOne($residentId);
                         if ($resident !== null) {
-                            $model->link('resident', $resident);
+                            $model->link('linkedResidents', $resident);
                         }
                     }
                 }
@@ -164,7 +168,7 @@ class ReceiverController extends Controller
                     foreach ($officerCharity as $officerId) {
                         $officer = Officer::findOne($officerId);
                         if ($officer !== null) {
-                            $model->link('officer', $officer);
+                            $model->link('linkedOfficers', $officer);
                         }
                     }
                 }
@@ -226,7 +230,7 @@ class ReceiverController extends Controller
                 $message = "";
                 foreach ($model->errors as $key => $value) {
                     foreach ($value as $key1 => $value2) {
-                        $message .= $value2 . "<br>";
+                        $message .= $value2;
                     }
                 }
                 Yii::$app->getSession()->setFlash('receiver_failed_create', [
@@ -389,7 +393,6 @@ class ReceiverController extends Controller
 
     public function actionDeleteAll()
     {
-        
         $delete = Receiver::deleteAll();
 
         if ($delete)
@@ -437,24 +440,51 @@ class ReceiverController extends Controller
 
         $model = ReceiverResident::findOne($id);
 
-        $model->status = $status;
-        $model->status_update = date('Y-m-d h:i:s');
+        $receiverDocumentationImage = new ReceiverDocumentationImage();
         
-        if ($model->save(false)) {
+        if ($receiverDocumentationImage->load(Yii::$app->request->post()) && $receiverDocumentationImage->validate() ||
+            $model->resident->load(Yii::$app->request->post() && $model->resident->validate()))
+        {
+            $model->status = $status;
+            $model->status_update = date('Y-m-d h:i:s');
+            $model->save(false);
+
+            $this->receiverDocumentationImage($receiver, $receiverDocumentationImage);
+            $this->residentIdentityHomeImage($model);
+
             Yii::$app->getSession()->setFlash('receiver_resident_status_success', [
                 'type'     => 'success',
                 'duration' => 5000,
                 'title'    => Yii::t('app', 'system_information'),
-                'message'  => Yii::t('app', 'coupon_success_claimed'),
+                'message'  => Yii::t('app', 'zakat_was_successfully_distributed'),
             ]);
             return $this->redirect(['view', 'id' => $receiver->id]);
         }
         else
         {
-            if ($model->errors)
+            // var_dump($model->resident->errors);
+            // die;
+            if ($receiverDocumentationImage->errors)
             {
                 $message = "";
-                foreach ($model->errors as $key => $value) {
+                foreach ($receiverDocumentationImage->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2;
+                    }
+                }
+                Yii::$app->getSession()->setFlash('receiver_resident_status_failed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
+            
+            if ($model->resident->errors)
+            {
+                $message = "";
+                foreach ($model->resident->errors as $key => $value) {
                     foreach ($value as $key1 => $value2) {
                         $message .= $value2;
                     }
@@ -468,6 +498,210 @@ class ReceiverController extends Controller
                 );
             }
         }
+
+        return $this->render('alms-coupon-claim', [
+            'receiverDocumentationImage' => $receiverDocumentationImage,
+            'receiver' => $receiver,
+            'model' => $model,
+        ]);
     }
 
+    public function actionCreateReceiverComplaint($id, $receiverId)
+    {
+        $receiver = $this->findModel($receiverId);
+        $model = ReceiverResident::findOne($id);
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            Yii::$app->getSession()->setFlash('receiver_complaint_status_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'system_information'),
+                'message'  => Yii::t('app', 'complaint_has_been_successfully'),
+            ]);
+
+            $model->status = ReceiverResident::NOT_SHARED;
+            $model->status_update = date('Y-m-d h:i:s');
+            $model->save();
+            return $this->redirect(['view', 'id' => $receiver->id]);
+        } else {
+            if ($model->errors)
+            {
+                $message = "";
+                foreach ($model->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2 . "<br>";
+                    }
+                }
+                Yii::$app->getSession()->setFlash('complaint_failed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
+        }
+
+        return $this->render('/receiver-resident/create', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionViewReceiverComplaint($id)
+    {
+        $model = ReceiverResident::findOne($id);
+
+        return $this->renderAjax('/receiver-resident/view', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionUpdateOfficerCitizen($id)
+    {
+        $model = $this->findModel($id);
+
+        // get all resident by populate to display on form select
+        $populate = Populate::find()->where([
+            'village_id' => $model->village_id,
+            'citizen_association_id' => $model->citizens_association_id,
+            'neighborhood_association_id' => $model->neighborhood_association_id
+        ])->one();
+
+        $allResidents = User::findResidentsByCode($populate->code);
+        $residentDatas = [];
+        foreach ($allResidents as $resident) {
+            $residentDatas[$resident->id] = $resident->name;
+        }
+
+        // get existing resident data to display value already exist on form select
+        $existResidents = [];
+        foreach ($model->receiverResidents as $data) {
+            $residentId = $data->resident_id;
+            
+            $residentUser = User::find()->joinWith('residents')->where(['resident.id' => $residentId])->one();
+            
+            if ($residentUser) {
+                $existResidents[$residentUser->id] = $residentUser->name;
+            }
+        }
+        $selectedResidents = array_keys($existResidents);
+
+        // get all officer datas
+        $allOfficers = User::find()->where(['level' => Yii::$app->user->identity->level])->all();
+        $officerDatas = [];
+        foreach ($allOfficers as $officer) {
+            $officerDatas[$officer->id] = $officer->name;
+        }
+
+        // get existing officer
+        $existOfficers = [];
+        foreach ($model->receiverOfficers as $data) {
+            $officerId = $data->officer_id;
+            
+            $officerUser = User::find()->joinWith('officers')->where(['officer.id' => $officerId])->one();
+            
+            if ($officerUser) {
+                $existOfficers[$officerUser->id] = $officerUser->name;
+            }
+        }
+        $selectedOfficers = array_keys($existOfficers);
+
+        // update action
+        if (Yii::$app->request->post()) {
+            $residentCharity = Yii::$app->request->post()['receiver-resident_id'];
+            $officerCharity = Yii::$app->request->post()['receiver-officer_id'];
+    
+            $model->unlinkAll('linkedResidents', true);
+            if (!empty($residentCharity)) {
+                foreach ($residentCharity as $residentId) {
+                    $resident = Resident::find()->where(['user_id' => $residentId])->one();
+                    if ($resident !== null) {
+                        $model->link('linkedResidents', $resident);
+                    }
+                }
+            }
+
+            $model->unlinkAll('linkedOfficers', true);
+            if (!empty($officerCharity)) {
+                foreach ($officerCharity as $officerId) {
+                    $officer = Officer::find()->where(['user_id' => $officerId])->one();
+                    if ($officer !== null) {
+                        $model->link('linkedOfficers', $officer);
+                    }
+                }
+            }
+
+            Yii::$app->getSession()->setFlash('update_officer_and_citizen_status_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'system_information'),
+                'message'  => Yii::t('app', 'update_officer_and_citizen_has_been_successfully'),
+            ]);
+
+            return $this->redirect(['view', 'id' => $model->id]);
+        }
+
+        return $this->render('update-officer-citizen', [
+            'model' => $model,
+            'residentDatas' => $residentDatas,
+            'selectedResidents' => $selectedResidents,
+            'officerDatas' => $officerDatas,
+            'selectedOfficers' => $selectedOfficers,
+        ]);
+    }
+
+    protected function receiverDocumentationImage($receiver, $receiverDocumentationImage)
+    {
+        $receiverDocumentationImage->url = UploadedFile::getInstances($receiverDocumentationImage, 'url');
+        if ($receiverDocumentationImage->url)
+        {
+            foreach ($receiverDocumentationImage->url as $key => $image) {
+                $docImage = new ReceiverDocumentationImage();
+                $docImage->receiver_id = $receiver->id;
+                
+                $file = Yii::$app->params['upload'] . 'receiver-documentation-image/' . $image->baseName . '.' . $image->extension;
+                $path = Yii::getAlias('@webroot') . $file;
+                $image->saveAs($path);
+
+                $docImage->name = $image->baseName;
+                $docImage->type = $image->type;
+                $docImage->size = $image->size;
+                $docImage->extension = $image->extension;
+                $docImage->description = null;
+                $docImage->url = $file;
+                $docImage->created_by = Yii::$app->user->identity->id;
+                $docImage->updated_by = null;
+                $docImage->created_at = date('Y-m-d H:i:s');
+                $docImage->updated_at = null;
+                $docImage->save(false);
+            }
+        }
+    }
+    
+    protected function residentIdentityHomeImage($model)
+    {
+        $image = UploadedFile::getInstances($model->resident, 'home_image');
+
+        if ($image)
+        {
+            foreach ($image as $uploadFile) {
+                $file = Yii::$app->params['upload'] . 'resident-home-image/' . $uploadFile->baseName . '.' . $uploadFile->extension;
+                $path = Yii::getAlias('@webroot') . $file;
+                $uploadFile->saveAs($path);
+                $model->resident->home_image = $file;
+                $model->resident->save(false);
+            }
+        }
+    }
+
+    public function actionViewReceiverDistribution($id, $residentId)
+    {
+        $model = Receiver::findOne($id);
+        $receiverResident = ReceiverResident::findOne($residentId);
+
+        return $this->renderAjax('/receiver-documentation-image/view', [
+            'model' => $model,
+            'receiverResident' => $receiverResident,
+        ]);
+    }
 }

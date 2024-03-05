@@ -11,6 +11,7 @@ use backend\models\ReceiverResident;
 use backend\models\ReceiverType;
 use backend\models\User;
 use backend\models\Village;
+use yii\bootstrap4\Modal;
 use yii\helpers\ArrayHelper;
 
 /* @var $this yii\web\View */
@@ -42,8 +43,8 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
             <div class="receiver-view">
                 
                 <p>
-                    <?= Html::a('Create', ['create'], ['class' => 'btn btn-success']) ?>
-                    <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+                    <?= Html::a(Yii::t('app', 'create_receiver'), ['create'], ['class' => 'btn btn-success']) ?>
+                    <?= Html::a('<button class="btn btn-primary"><i class="fa fa-users"></i></button>', ['update-officer-citizen', 'id' => $model->id], ['class' => '']) ?>
                 </p>
 
                 <?php if ($model->receiver_type_id == ReceiverType::ZAKAT) : ?>
@@ -133,7 +134,7 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php $no=1; foreach ($model->listOfficers() as $officer): ?>
+                                                <?php $no=1; foreach ($model->listOfficersByReceiver() as $officer): ?>
                                                     <tr>
                                                         <td><?= $no++ ?></td>
                                                         <td><?= $officer->officer->user->name?></td>
@@ -168,29 +169,60 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                                                     <th><?= Yii::t('app', 'name') ?></th>
                                                     <th><?= Yii::t('app', 'status_distribution') ?></th>
                                                     <th><?= Yii::t('app', 'status_update') ?></th>
+                                                    <th><?= Yii::t('app', 'action') ?></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php $no=1; foreach ($model->listResidents() as $resident): ?>
+                                                <?php $no=1; foreach ($model->listResidentsByReceiver() as $resident): ?>
                                                     <tr>
                                                         <td><?= $no++ ?></td>
                                                         <td><?= $resident->resident->user->name?></td>
                                                         <td>
                                                             <?php
-                                                                if ($resident->status == ReceiverResident::NOT_CLAIM) {
-                                                                    echo Html::a(
-                                                                        '<button class="btn btn-info">Pakai Kupon</button>',
-                                                                        ['receiver/alms-coupon-claim', 'id' => $resident->id, 'status' => ReceiverResident::CLAIM, 'receiverId' => $model->id],
-                                                                        ['data' => ['confirm' => 'Apa Anda yakin pakai kupon ini?']]
+                                                                if ($resident->status == ReceiverResident::NOT_YET_SHARED) {
+                                                                    echo Html::a('<button class="btn btn-info">' . Yii::t('app', 'distributed') . '</button>',
+                                                                        ['receiver/alms-coupon-claim', 'id' => $resident->id, 'status' => ReceiverResident::SHARED, 'receiverId' => $model->id],
+                                                                        ['data' => ['confirm' => Yii::t('app', 'are_you_sure_want_to_share_this_zakat_?')]]
                                                                     );
-                                                                } elseif ($resident->status == ReceiverResident::CLAIM) {
-                                                                    echo '<button class="btn btn-secondary disable">'.Yii::t('app', 'has_been_distributed').'</button>';
+                                                                } elseif ($resident->status == ReceiverResident::SHARED) {
+                                                                    echo Html::a('<button class="btn btn-secondary">' . Yii::t('app', 'has_been_distributed') . '</button>',
+                                                                    ['receiver/view-receiver-distribution', 'id' => $model->id, 'residentId' => $resident->id],
+                                                                    ['title' => Yii::t('app', 'look_a_detail_distribution'), 'class' => 'coupon-claim-result']
+                                                                );
+                                                                } elseif ($resident->status == ReceiverResident::NOT_SHARED) {
+                                                                    echo '<button class="btn btn-secondary disable">'.Yii::t('app', 'not_distributed').'</button>';
                                                                 } else {
                                                                     echo '<button class="btn btn-secondary disable">'.Yii::t('app', 'coupon_not_valid').'</button>';
                                                                 }
                                                             ?>
                                                         </td>
                                                         <td><?= $resident->status_update ? $resident->status_update : Yii::t('app', 'not_yet_update') ?></td>
+                                                        <td>
+                                                            <?php 
+                                                                if ($resident->status == ReceiverResident::SHARED) {
+                                                                    echo '<button class="btn btn-dark disable" title="' . Yii::t('app', 'the_complaint_button_is_closed') . '"><i class="fas fa-window-close" aria-hidden="true"></i></button>';
+                                                                } elseif ($resident->status == ReceiverResident::NOT_YET_SHARED) {
+                                                                    echo Html::a(
+                                                                        '<i class="fas fa-arrow-alt-circle-right"></i>',
+                                                                        ['receiver/create-receiver-complaint', 'id' => $resident->id, 'receiverId' => $model->id],
+                                                                        [
+                                                                            'class' => 'btn btn-danger',
+                                                                            'title' => Yii::t('app', 'create_complaint'),
+                                                                            'data' => ['confirm' => Yii::t('app', 'are_you_sure_create_complaint_?')]
+                                                                        ]
+                                                                    );
+                                                                } elseif (($resident->status == ReceiverResident::NOT_SHARED)) {
+                                                                    echo Html::a(
+                                                                        '<i class="fas fa-arrow-alt-circle-right"></i>',
+                                                                        ['receiver/view-receiver-complaint', 'id' => $resident->id],
+                                                                        [
+                                                                            'class' => 'btn btn-info view-complained',
+                                                                            'title' => Yii::t('app', 'view_complaint')
+                                                                        ]
+                                                                    );
+                                                                }
+                                                            ?>
+                                                        </td>
                                                     </tr>
                                                 <?php endforeach ?>
                                             </tbody>
@@ -334,7 +366,59 @@ residents.on( 'order.dt search.dt', function () {
     } );
 } ).draw();
 
+$(".view-complained").on("click", function(e) {
+    e.preventDefault();
+    url = $(this).attr('href');
+    $('#viewComplained')
+        .modal('show')
+        .find('.modal-body')
+        .html('Loading ...')
+        .load(url);
+        return false;
+});
+
+$(".coupon-claim-result").on("click", function(e) {
+    e.preventDefault();
+    url = $(this).attr('href');
+    $('#couponClaimResult')
+        .modal('show')
+        .find('.modal-body')
+        .html('Loading ...')
+        .load(url);
+        return false;
+});
+
 JS;
 
 $this->registerJs($js);
+
+Modal::begin([
+    'id' => 'viewComplained',
+    'size' => Modal::SIZE_LARGE,
+    'title' => Yii::t('app', 'complaint_details'),
+    'closeButton' => [
+        'id'=>'close-button',
+        'class'=>'close',
+        'data-dismiss' =>'modal',
+    ],
+    'clientOptions' => [
+        'backdrop' => false, 'keyboard' => true
+    ]
+]);
+Modal::end();
+
+Modal::begin([
+    'id' => 'couponClaimResult',
+    'size' => Modal::SIZE_LARGE,
+    'title' => Yii::t('app', 'detail_distribution'),
+    'closeButton' => [
+        'id'=>'close-button',
+        'class'=>'close',
+        'data-dismiss' =>'modal',
+    ],
+    'clientOptions' => [
+        'backdrop' => false, 'keyboard' => true
+    ]
+]);
+Modal::end();
 ?>

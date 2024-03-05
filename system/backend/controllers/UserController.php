@@ -2,6 +2,7 @@
 
 namespace backend\controllers;
 
+use backend\models\Env;
 use backend\models\Officer;
 use Yii;
 use backend\models\User;
@@ -126,18 +127,18 @@ class UserController extends Controller
             // die;
             $model->save();
 
+            $populate = Populate::find()->where(['code' => $model->code])->one();
+
+            if ($populate) {
+                $province = $populate->village->location->province_name; // provinsi
+                $city = $populate->village->location->city_name; // kota
+                $district = $populate->village->location->district_name; // kecamatan
+                $village = $populate->village->id; // kelurahan
+                $citizen = $populate->citizenAssociation->id; // rw
+                $neighborhood = $populate->neighborhoodAssociation->id; // rt
+            }
+
             if ($model->type == UserType::RESIDENT) {
-                $populate = Populate::find()->where(['code' => $model->code])->one();
-
-                if ($populate) {
-                    $province = $populate->village->location->province_name; // provinsi
-                    $city = $populate->village->location->city_name; // kota
-                    $district = $populate->village->location->district_name; // kecamatan
-                    $village = $populate->village->id; // kelurahan
-                    $citizen = $populate->citizenAssociation->id; // rw
-                    $neighborhood = $populate->neighborhoodAssociation->id; // rt
-                }
-
                 $resident = new Resident();
                 $resident->user_id = $model->id;
                 $resident->nik = null;
@@ -204,6 +205,21 @@ class UserController extends Controller
                 $officer->registration_date = date('Y-m-d h:i:s');
                 $officer->facility_id = null;
                 $officer->save(false);
+            }
+
+            if ($model->type == UserType::ENV) {
+                $env = new Env();
+                $env->user_id = $model->id;
+                $env->nik = null;
+                $env->telp = null;
+                $env->province = $province;
+                $env->city = $city;
+                $env->district = $district;
+                $env->village_id = $village;
+                $env->citizen_association_id = $citizen;
+                $env->neighborhood_association_id = $neighborhood;
+                $env->registration_date = date('Y-m-d h:i:s');
+                $env->save(false);
             }
 
             /* Application Log Database */

@@ -193,13 +193,12 @@ AppAsset::register($this);
     <a href="<?= Url::base() ?>" class="brand-link">
       <?php
         $branch = Branch::find()->where(['code' => Yii::$app->user->identity->code])->one();
-        
-        $branchImage = $branch['bch_image'] && is_file(Yii::getAlias('@webroot') . $branch['bch_image']) ? $branch['bch_image'] : '../images/no_background.jpg';
 
-        $branchName = $branch->bch_name ?? Yii::t('app', 'mosque_hub');
+        $branchImage = $branch && $branch['bch_image'] && is_file(Yii::getAlias('@webroot') . $branch['bch_image']) ? Url::base() . $branch['bch_image'] : Url::base() . '../images/no_background.jpg';
+        $branchName = $branch ? $branch->bch_name : Yii::t('app', 'nexcity');
       ?>
-      <img src="<?=Url::base().$branchImage?>"
-           alt="<?= Yii::t('app', 'mosque_hub') ?>"
+      <img src="<?= $branchImage ?>"
+           alt="<?= Yii::t('app', 'nexcity') ?>"
            class="brand-image img-circle elevation-3"
            style="opacity: .8">
       <span class="brand-text font-weight-light"><?= $branchName ?></span>

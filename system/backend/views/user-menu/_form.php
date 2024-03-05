@@ -263,7 +263,7 @@ foreach ($frontend_controllerlist as $frontend_controller)
 								return state;
 	                        }'
 	                    ),
-                        'allowClear' => false
+                        'allowClear' => true
                     ],
                 ]);
             ?>
