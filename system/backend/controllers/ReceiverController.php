@@ -576,7 +576,6 @@ class ReceiverController extends Controller
         ])->one();
 
         $allResidents = User::findResidentsByCode($populate->code);
-
         $residentDatas = [];
         foreach ($allResidents as $resident) {
             $residentDatas[$resident->id] = $resident->name;
