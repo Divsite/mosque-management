@@ -61,7 +61,7 @@ class Resident extends \yii\db\ActiveRecord
             [['address'], 'string'],
             [['user_id', 'telp', 'identity_card_image', 'home_image', 'birth_place', 'interest'], 'string', 'max' => 255],
             [['province', 'city', 'district'], 'string', 'max' => 50],
-            
+            [['home_image'], 'file', 'skipOnEmpty' => true, 'extensions' => ['png', 'jpg', 'jpeg', 'gif'], 'maxSize' => 1024 * 1024 * 2, 'maxFiles' => 1]
         ];
     }
 

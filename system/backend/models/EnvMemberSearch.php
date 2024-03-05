@@ -4,12 +4,12 @@ namespace backend\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use backend\models\UserType;
+use backend\models\EnvMember;
 
 /**
- * UserTypeSearch represents the model behind the search form of `backend\models\UserType`.
+ * EnvMemberSearch represents the model behind the search form of `backend\models\EnvMember`.
  */
-class UserTypeSearch extends UserType
+class EnvMemberSearch extends EnvMember
 {
     /**
      * {@inheritdoc}
@@ -17,8 +17,8 @@ class UserTypeSearch extends UserType
     public function rules()
     {
         return [
-            [['is_partner'], 'integer'],
-            [['code', 'table'], 'safe'],
+            [['id', 'env_id', 'env_division_id', 'is_chief'], 'integer'],
+            [['name', 'timestamp'], 'safe'],
         ];
     }
 
@@ -40,7 +40,7 @@ class UserTypeSearch extends UserType
      */
     public function search($params)
     {
-        $query = UserType::find();
+        $query = EnvMember::find();
 
         // add conditions that should always apply here
 
@@ -56,13 +56,16 @@ class UserTypeSearch extends UserType
             return $dataProvider;
         }
 
+        // grid filtering conditions
         $query->andFilterWhere([
-            'is_partner' => $this->is_partner,
+            'id' => $this->id,
+            'env_id' => $this->env_id,
+            'env_division_id' => $this->env_division_id,
+            'is_chief' => $this->is_chief,
+            'timestamp' => $this->timestamp,
         ]);
 
-        // grid filtering conditions
-        $query->andFilterWhere(['like', 'code', $this->code])
-            ->andFilterWhere(['like', 'table', $this->table]);
+        $query->andFilterWhere(['like', 'name', $this->name]);
 
         return $dataProvider;
     }

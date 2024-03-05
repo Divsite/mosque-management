@@ -7,7 +7,7 @@ use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
 use backend\models\ReceiverType;
 use backend\models\Village;
-
+use kartik\date\DatePicker;
 
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\ReceiverSearch */
@@ -112,7 +112,20 @@ $this->params['breadcrumbs'][] = $this->title;
                             },
                         ],
                         
-                        'registration_year',
+                        [
+                            'attribute' => 'registration_year',
+                            'filter' => DatePicker::widget([
+                                'model' => $searchModel,
+                                'attribute' => 'registration_year',
+                                'options' => ['class' => 'form-control', 'id' => 'registration-year-filter'],
+                                'pluginOptions' => [
+                                    'format' => 'yyyy',
+                                    'autoclose' => true,
+                                    'startView' => 'years',
+                                    'minViewMode' => 'years',
+                                ],
+                            ]),
+                        ],
 
                         [
                             'class' => 'yii\grid\ActionColumn',
@@ -152,3 +165,19 @@ $this->params['breadcrumbs'][] = $this->title;
         <!-- /.card-footer-->
     </div>
 </div>
+
+<?php
+$js = <<< JS
+    $('#registration-year-filter').on('click', function(){
+        $(this).datepicker({
+            changeYear: true,
+            yearRange: '1900:' + new Date().getFullYear(),
+            dateFormat: 'yy',
+            showButtonPanel: true,
+        }).focus();
+    });
+JS;
+
+$this->registerJs($js);
+
+?>

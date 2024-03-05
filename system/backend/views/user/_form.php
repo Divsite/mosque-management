@@ -170,6 +170,7 @@ $select_code = ArrayHelper::map(Branch::find()->asArray()->all(),'code', functio
 <?php
 
 $url_reff_type = Url::to(['reff/user-type']);
+$url_user_level = Url::to(['reff/user-level']);
 
 $js = <<< JS
 
@@ -192,61 +193,77 @@ function readURL(input) {
 
 $('#user-type').on('change', function(e) {
 
-    var this_val = $(this).val();
+    var typeVal = $(this).val();
 
-    $.post('$url_reff_type' + '?code=' + this_val, function(data) { 
+    $.post('$url_reff_type' + '?code=' + typeVal, function(data) { 
+        if (data.status) {
 
-            if (data.status) {
+            data_level = '<option></option>';
 
-                /**
-                 * select level function by type
-                 * level selected from type
-                 * **/
-                data_level = '<option></option>';
-
-                $.each(data.data_level, function(i, val) {
+            $.each(data.data_level, function(i, val) {
+                if (val.type == 'W' || val.type == "L") {
+                    // console.log(val.type);
                     data_level+= '<option value="' + val.code + '">' + val.name + '</option>';
+                }
+            });
+
+            $("#user-level").html(data_level)
+
+            /**
+             * select code function by type
+             * code selected from type
+             * **/
+
+            // Clear and populate the Select2 with new data
+            $("#user-code").empty(); // Clear existing options
+
+            data_code = '<option></option>';
+
+            $.each(data.data_code, function(i, val) {
+
+                val_name = '';
+
+                if (typeVal == 'B') {
+                    val_name = val.bch_name + ' - ' + val.branchCategory.name;
+                } 
+                if (typeVal == 'P') {
+                    val_name = val.cus_name;
+                }
+                if (typeVal == 'W' || typeVal == 'L') {
+                    val_name = val.village.location.province_name + ' ' +
+                                val.village.location.city_name + ' ' + 
+                                val.village.location.district_name + ' ' + 
+                                val.village.name + ' ' + 
+                                val.citizenAssociation.name + ' ' + 
+                                val.neighborhoodAssociation.name;
+                }
+
+                data_code+= '<option value="' + val.code + '">' + val_name + '</option>';
+                $("#user-code").append(new Option(val_name, val.code, false, false));
+            });
+        }
+    });
+});
+
+$('#user-code').on('change', function(e) {
+    var this_val = $(this).val();
+    var typeVal = $('#user-type').val();
+    /**
+     * select level function by user code
+     * **/
+    data_level_option = '<option></option>';
+    $.post('$url_user_level' + '?code=' + this_val + '&type=' + typeVal, function(data) {
+        if (data.status) {
+            let dataLevel = data.data_level;
+            if (typeVal == 'B') {
+                $.each(dataLevel, function(i, val) {
+                    data_level_option += '<option value="' + val.code + '">' + val.name + '</option>';
                 });
-
-                $("#user-level").html(data_level);
-
-                /**
-                 * select code function by type
-                 * code selected from type
-                 * **/
-
-                // Clear and populate the Select2 with new data
-                $("#user-code").val(null).trigger("change"); // Clear existing selection
-                $("#user-code").empty(); // Clear existing options
-
-                data_code = '<option></option>';
-
-                $.each(data.data_code, function(i, val) {
-
-                    val_name = '';
-
-                    if (this_val == 'B') {
-                        val_name = val.bch_name ;
-                    } 
-                    if (this_val == 'C') {
-                        val_name = val.cus_name ;
-                    }
-                    if (this_val == 'W') {
-                        val_name = val.village.location.province_name + ' ' +
-                                    val.village.location.city_name + ' ' + 
-                                    val.village.location.district_name + ' ' + 
-                                    val.village.name + ' ' + 
-                                    val.citizenAssociation.name + ' ' + 
-                                    val.neighborhoodAssociation.name;
-                    }
-
-                    data_code+= '<option value="' + val.code + '">' + val_name + '</option>';
-                    $("#user-code").append(new Option(val_name, val.code, false, false));
-                });
-
-                // $("#user-code").html(data_code);
+            } else {
+                data_level_option += '<option value="' + dataLevel.code + '">' + dataLevel.name + '</option>';
             }
-
+        }
+        $("#user-level").html(data_level_option);
     });
 });
 
