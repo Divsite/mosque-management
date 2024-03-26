@@ -5,6 +5,7 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use backend\models\CharityType;
+use Yii;
 
 /**
  * CharityTypeSearch represents the model behind the search form of `backend\models\CharityType`.
@@ -17,9 +18,9 @@ class CharityTypeSearch extends CharityType
     public function rules()
     {
         return [
-            [['id'], 'integer'],
-            [['name', 'desc', 'timestamp'], 'safe'],
-            [['min', 'max'], 'number'],
+            [['id', 'is_active', 'charity_type_source_id'], 'integer'],
+            [['desc', 'timestamp', 'registration_year'], 'safe'],
+            [['min', 'max', 'total_rice'], 'number'],
         ];
     }
 
@@ -41,7 +42,7 @@ class CharityTypeSearch extends CharityType
      */
     public function search($params)
     {
-        $query = CharityType::find();
+        $query = CharityType::find()->where(['branch_code' => Yii::$app->user->identity->code]);
 
         // add conditions that should always apply here
 
@@ -60,13 +61,16 @@ class CharityTypeSearch extends CharityType
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
+            'charity_type_source_id' => $this->charity_type_source_id,
             'min' => $this->min,
             'max' => $this->max,
+            'total_rice' => $this->total_rice,
             'timestamp' => $this->timestamp,
+            'registration_year' => $this->registration_year,
+            'is_active' => $this->is_active,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'desc', $this->desc]);
+        $query->andFilterWhere(['like', 'desc', $this->desc]);
 
         return $dataProvider;
     }

@@ -6,7 +6,7 @@ use backend\models\CharityType;
 use kartik\select2\Select2;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
-use yii\widgets\ActiveForm;
+use kartik\form\ActiveForm;
 
 /* @var $this yii\web\View */
 /* @var $model backend\models\Charity */
@@ -14,10 +14,6 @@ use yii\widgets\ActiveForm;
 $this->title = Yii::t('app', 'Create Charity');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Charities'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
-
-// echo "<pre>";
-// var_dump($charityManually);
-// die;
 ?>
 <div class="card table-card">
     <div class="card-header">
@@ -50,7 +46,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 ?>
 
                 <?= $form->field($model, 'type_charity_id', ['inputOptions'=>['id'=>'type_charity_id']])->widget(Select2::classname(),[
-                    'data' => ArrayHelper::map(CharityType::find()->all(), 'id', 'name'),
+                    'data' => ArrayHelper::map(CharityType::find()->with('charitySource')->all(), 'id', 'charitySource.name'),
                     'options' => [
                         'placeholder' => Yii::t('app', 'select_type'),
                         'value' => $model->type_charity_id,

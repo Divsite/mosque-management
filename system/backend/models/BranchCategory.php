@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "branch_category".
@@ -43,5 +44,12 @@ class BranchCategory extends \yii\db\ActiveRecord
             'name' => Yii::t('app', 'Name'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
+    }
+
+    public static function getListBranchCategory()
+    {
+        return ArrayHelper::map(
+            static::find()->all(), 'id', 'name'
+        );
     }
 }

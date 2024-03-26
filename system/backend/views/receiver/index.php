@@ -2,6 +2,7 @@
 
 use backend\models\CitizensAssociation;
 use backend\models\NeighborhoodAssociation;
+use backend\models\Receiver;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
@@ -38,6 +39,14 @@ $this->params['breadcrumbs'][] = $this->title;
 
                 <?php if (Yii::$app->user->identity->can('print-receiver-barcode')) : ?>
                     <?= Html::a('<i class="fa fa-barcode"></i> ' . Yii::t('app', 'print_barcode'), ['print-receiver-barcode'], ['class' => 'btn btn-info btn-margin']) ?>
+                <?php endif ?>
+
+                <?php if (Yii::$app->user->identity->can('income-index')) : ?>
+                    <?= Html::a('<i class="fa fa-dollar-sign"></i> ' . Yii::t('app', 'incomes'), ['income-index'], ['class' => 'btn btn-primary btn-margin']) ?>
+                <?php endif ?>
+
+                <?php if (Yii::$app->user->identity->can('expense-index')) : ?>
+                    <?= Html::a('<i class="fa fa-money-bill-alt"></i> ' . Yii::t('app', 'expenses'), ['expense-index'], ['class' => 'btn btn-secondary btn-margin']) ?>
                 <?php endif ?>
                 
                 <?php if (Yii::$app->user->identity->can('delete-all')) : ?>
@@ -126,6 +135,38 @@ $this->params['breadcrumbs'][] = $this->title;
                                 ],
                             ]),
                         ],
+
+                        [
+                            'format' => 'raw',
+                            'attribute' => 'status',
+                            'value' => function ($model) {
+                                if ($model->receiverType->code == "ZKT") {
+                                    if ($model->status == Receiver::DONE_STATUS) {
+                                        return Yii::t('app', 'distribution_has_been_over');
+                                    } elseif ($model->status == Receiver::PENDING_STATUS) {
+                                        return 
+                                        '<div class="progress">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                    role="progressbar" aria-valuenow="75" aria-valuemin="0"
+                                                    aria-valuemax="100" style="width: 100%">
+                                            </div>
+                                        </div>';
+                                    } 
+                                } elseif ($model->receiverType->code == "QRN") {
+                                    if ($model->status == Receiver::NOT_CLAIM) {
+                                        return Yii::t('app', 'not_claimed');
+                                    } elseif ($model->status == Receiver::CLAIM) {
+                                        return Yii::t('app', 'already_claimed');
+                                    }
+                                }
+                            },
+                            'filter'=> [
+                                Receiver::DONE_STATUS => Yii::t('app', 'distribution_has_been_over'),
+                                Receiver::PENDING_STATUS => Yii::t('app', 'distribution_in_progress'),
+                                Receiver::NOT_CLAIM => Yii::t('app', 'not_claimed'),
+                                Receiver::CLAIM => Yii::t('app', 'already_claimed'),
+                            ],
+                        ],   
 
                         [
                             'class' => 'yii\grid\ActionColumn',

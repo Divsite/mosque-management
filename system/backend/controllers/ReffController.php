@@ -244,7 +244,8 @@ class ReffController extends \yii\web\Controller
             switch ($type) {
                 case 'B':
                     $dataLevel = UserLevel::find()
-                        ->where(['partner_code' => $code])
+                        // ->where(['partner_code' => $code])
+                        ->where(['type' => UserType::BRANCH])
                         ->asArray()
                         ->all();
                     break;
@@ -256,7 +257,14 @@ class ReffController extends \yii\web\Controller
                 case 'L':
                     $dataLevel = UserLevel::find()
                         ->where(['type' => UserType::ENV])
-                        ->one();
+                        ->asArray()
+                        ->all();
+                    break;
+                case 'D':
+                    $dataLevel = UserLevel::find()
+                        ->where(['type' => UserType::DIVSITE])
+                        ->asArray()
+                        ->all();
                     break;
                 default:
                     $dataLevel = [];

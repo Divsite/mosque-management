@@ -5,7 +5,8 @@
 
 use backend\assets\AppAsset;
 use backend\models\Branch;
-use yii\helpers\uRL;
+use backend\models\UserType;
+use yii\helpers\Url;
 use yii\helpers\Html;
 use yii\widgets\Menu;
 use yii\bootstrap4\Breadcrumbs;
@@ -23,7 +24,7 @@ AppAsset::register($this);
     <?php $this->registerCsrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
-    <link rel="shortcut icon" href="<?=Url::base()?>/dist/img/logo_ica.jpg">
+    <link rel="shortcut icon" href="<?=Url::base()?>/dist/img/nexcity_logo.ico">
     <style type="text/css">
         .center {
           position: absolute;
@@ -194,7 +195,7 @@ AppAsset::register($this);
       <?php
         $branch = Branch::find()->where(['code' => Yii::$app->user->identity->code])->one();
 
-        $branchImage = $branch && $branch['bch_image'] && is_file(Yii::getAlias('@webroot') . $branch['bch_image']) ? Url::base() . $branch['bch_image'] : Url::base() . '../images/no_background.jpg';
+        $branchImage = $branch && $branch['bch_image'] && is_file(Yii::getAlias('@webroot') . $branch['bch_image']) ? Url::base() . $branch['bch_image'] : Url::base() . '/dist/img/nexcity_logo_elipse.png';
         $branchName = $branch ? $branch->bch_name : Yii::t('app', 'nexcity');
       ?>
       <img src="<?= $branchImage ?>"
@@ -209,7 +210,10 @@ AppAsset::register($this);
       <!-- Sidebar user (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="image">
-          <img src="<?=Url::base().Yii::$app->user->identity->image?>" class="img-circle elevation-2" alt="User Image">
+          <?php
+            $userImage = Yii::$app->user->identity->image ? Url::base() . Yii::$app->user->identity->image : Url::base() . '/images/no_photo.jpg';
+          ?>
+          <img src="<?= $userImage ?>" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
           <a href="<?= Url::toRoute(['user/view', 'id' => Yii::$app->user->identity->id])?>" class="d-block"><?=Yii::$app->user->identity->name?></a>
@@ -217,16 +221,40 @@ AppAsset::register($this);
       </div>
 
       <?php
-
             $user    = Yii::$app->user->identity->id;
             $level   = Yii::$app->user->identity->level;
+            $userType = Yii::$app->user->identity->type;
+            $userCode = Yii::$app->user->identity->code;
+            $bchCategory = Branch::find()->where(['code' => $userCode])->one();
             $items   = array();
             $items[] = ['label' => '<div class="nav-header">Main Menu</div>'];
             $items[] = ['label' => '<i class="nav-icon fa fa-home"></i><p>Dashboard</p>', 'url' => ['site/index']];
 
             /* ------------------------------------------ MENU LEVEL 1 ------------------------------------------ */
 
-            $user_menu = \backend\models\UserMenu::find()->where(['level' => Yii::$app->user->identity->level, 'module' => Yii::$app->controller->module->id])->orderBy(['seq' => SORT_ASC, 'id' => SORT_DESC])->asArray()->all();
+            $query = \backend\models\UserMenu::find()
+                ->where([
+                    'level' => Yii::$app->user->identity->level,
+                    'module' => Yii::$app->controller->module->id,
+                ])
+                ->orderBy(['seq' => SORT_ASC, 'id' => SORT_DESC]);
+
+            switch ($userType) {
+                case UserType::BRANCH:
+                    $query->andWhere(['bch_category_id' => $bchCategory->bch_category_id]);
+                    break;
+                case UserType::ENV:
+                case UserType::RESIDENT:
+                case UserType::DIVSITE:
+                    break;
+                default:
+                    break;
+            }
+
+            $user_menu = $query->asArray()->all();
+
+            // var_dump($query->asArray()->all());
+            // die;
 
             if (count($user_menu) > 0) // Check if Array Exists
             {
