@@ -14,6 +14,7 @@ use backend\models\CharityZakatFidyah;
 use backend\models\CharityZakatFitrah;
 use backend\models\CharityZakatFitrahPackage;
 use backend\models\CharityZakatMal;
+use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -256,12 +257,28 @@ class CharityController extends Controller
     {
         $model = $this->findModel($id);
 
+        $charityManually = $model->charityManually;
+
+        $charityZakatFitrah = $model->charityZakatFitrah;
+        $charityZakatFidyah = $model->charityZakatFidyah;
+        $charityInfaq = $model->charityInfaq;
+        $charitySodaqoh = $model->charitySodaqoh;
+        $charityZakatMal = $model->charityZakatMal;
+        $charityWaqaf = $model->charityWaqaf;
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('update', [
             'model' => $model,
+            'charityManually' => $charityManually,
+            'charityZakatFitrah' => $charityZakatFitrah,
+            'charityZakatFidyah' => $charityZakatFidyah,
+            'charityInfaq' => $charityInfaq,
+            'charitySodaqoh' => $charitySodaqoh,
+            'charityZakatMal' => $charityZakatMal,
+            'charityWaqaf' => $charityWaqaf,
         ]);
     }
 
@@ -297,7 +314,85 @@ class CharityController extends Controller
 
     public function actionReport()
     {
+        $charityType = CharityType::find()
+            ->with('charitySource')
+            ->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'is_active' => CharityType::ACTIVE,
+            ]);
+
+        $charityManually = Charity::find()
+            ->with(['charityType', 'charityManually'])
+            ->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'type' => Charity::CHARITY_TYPE_MANUALLY,
+            ])
+            ->groupBy('type_charity_id');
         
+        $charityAutomatic = Charity::find()
+            ->with([
+                'charityType', 
+                'charityZakatFitrah', 
+                'charityZakatFidyah',
+                'charityInfaq',
+                'charitySodaqoh',
+                'charityZakatMal',
+                'charityWaqaf',
+            ])
+            ->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'type' => Charity::CHARITY_TYPE_AUTOMATIC,
+            ])
+            ->groupBy('type_charity_id');
+
+        if (Yii::$app->request->post('registration_year')) {
+            $charityType->andWhere(['registration_year' => Yii::$app->request->post('registration_year')]);
+            $charityManually->andWhere(['year' => Yii::$app->request->post('registration_year')]);
+            $charityAutomatic->andWhere(['year' => Yii::$app->request->post('registration_year')]);
+        }
+
+        $summaryCharityType = new ActiveDataProvider([
+            'query' => $charityType,
+        ]);
+        
+        $summaryCharityManually = new ActiveDataProvider([
+            'query' => $charityManually
+        ]);
+        
+        $summaryCharityAutomatic = new ActiveDataProvider([
+            'query' => $charityAutomatic
+        ]);
+
+        $charityDailyManually = Charity::find()
+            ->joinWith('charityManually')
+            ->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'type' => Charity::CHARITY_TYPE_MANUALLY,
+            ]);
+
+        $paymentDate = Yii::$app->request->post('payment_date');
+
+        if (Yii::$app->request->post('type_charity_id') && $paymentDate) {
+            $charityDailyManually->andWhere([
+                'type_charity_id' => Yii::$app->request->post('type_charity_id'),
+                'charity_manually.payment_date' => Yii::$app->request->post('payment_date')
+            ]);
+        }
+
+        // echo "<pre>";
+        // var_dump($charityDailyManually);
+        // die;
+        
+        $summaryCharityDailyManually = new ActiveDataProvider([
+            'query' => $charityDailyManually,
+        ]);
+
+        return $this->render('report', [
+            'summaryCharityType' => $summaryCharityType,
+            'summaryCharityManually' => $summaryCharityManually,
+            'summaryCharityAutomatic' => $summaryCharityAutomatic,
+            'summaryCharityDailyManually' => $summaryCharityDailyManually,
+        ]);
     }
 
     public function actionSelectCharityType($id)
@@ -305,10 +400,10 @@ class CharityController extends Controller
         $charityType = CharityType::findOne(['id' => $id]);
 
         $result = json_encode(array(
-                    'min' => $charityType->min ? $charityType->min : null,
-                    'max' => $charityType->max ? $charityType->max : null,
-                    'rice' => $charityType->total_rice ? $charityType->total_rice : null,
-                    'package' => $charityType->package ? $charityType->package : null,
+                    'min' => $charityType->min ? Yii::$app->formatter->asCurrency($charityType->min, 'IDR') : '-',
+                    'max' => $charityType->max ? Yii::$app->formatter->asCurrency($charityType->max, 'IDR') : '-',
+                    'rice' => $charityType->total_rice ? $charityType->total_rice : '-',
+                    'package' => $charityType->package ? $charityType->package : '-',
                 ));
 
         return $result;
@@ -327,5 +422,63 @@ class CharityController extends Controller
         ));
 
         return $result;
+    }
+
+    public function actionPrintInvoice($id)
+    {
+        $model = TbInvoice::findOne($id);
+
+        $allServices = TbInvoiceService::find()
+                    ->where(['id_tb_invoice' => $model->id])
+                    ->orderBy(['qty' => SORT_DESC])
+                    ->all();
+
+        $sum = TbInvoiceService::find()->where(['id_tb_invoice' => $model->id])->sum('amount');
+
+        $content = $this->renderPartial('/tb-invoice/print/invoice', [
+                'model' => $model,
+                'allServices' => $allServices,
+                'sum' => $sum,
+                ]);
+        
+        $cssInline = <<< CSS
+        .table1 {
+            font-family: sans-serif;
+            /* font-weight:normal; */
+            color: #232323;
+            border-collapse: collapse;
+            width: 100%;
+            border: 1px solid #000000;
+            font-weight: bold;
+        }
+        .table1, th, td {
+            border: 1px solid #000000;
+            padding: 3px 2px;
+        }
+        .table1 tr:hover {
+            background-color: #f5f5f5;
+        }
+        CSS;
+        $pdf = new Pdf([
+            'mode' => Pdf::MODE_UTF8,
+            'marginLeft' => 5,
+            'marginRight' => 5,
+            'marginTop' => 4,
+            'format' => [210,297],
+            'orientation' => Pdf::ORIENT_PORTRAIT,
+            'destination' => Pdf::DEST_BROWSER,
+            'content' => $content,
+            'cssInline' => $cssInline,
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            'options' => ['title' => 'Invoice Order'],
+            'methods' => [
+                'SetHeader'=> [null],
+                'SetFooter'=> [null]
+            ]
+        ]);
+
+        $date = date('d-m-Y His');
+        $pdf->filename = "Invoice - ".$date.".pdf";
+        return $pdf->render();
     }
 }

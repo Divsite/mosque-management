@@ -36,7 +36,7 @@ class UserMenu extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id_sub', 'id_sub2', 'seq'], 'integer'],
+            [['id_sub', 'id_sub2', 'seq', 'bch_category_id'], 'integer'],
             [['level', 'module'], 'required'],
             [['class'], 'string'],
             [['level', 'module', 'url_controller', 'url_view', 'url_parameter', 'icon', 'name'], 'string', 'max' => 50],
@@ -61,6 +61,7 @@ class UserMenu extends \yii\db\ActiveRecord
             'seq' => 'Sequence',
             'icon' => 'Icon',
             'name' => 'Name',
+            'bch_category_id' => 'Branch Category',
         ];
     }
 }

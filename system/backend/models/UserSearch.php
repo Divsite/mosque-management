@@ -41,8 +41,11 @@ class UserSearch extends User
      */
     public function search($params)
     {
-        $query = User::find()
-                ->where(['code' => Yii::$app->user->identity->code]);
+        if (Yii::$app->user->identity->type == UserType::ENV) {
+            $query = User::find()->where(['code' => Yii::$app->user->identity->code]);
+        } else {
+            $query = User::find();
+        }
 
         // add conditions that should always apply here
 

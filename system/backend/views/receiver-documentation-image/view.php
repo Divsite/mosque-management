@@ -27,7 +27,7 @@ use yii\helpers\Url;
                         <?= Yii::t('app', 'name') ?> : <b><?= $receiverResident->resident->user->name ?></b>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <?= Yii::t('app', 'class') ?> : <b><?= $model->receiverClass ? $model->receiverClass->name : '-' ?></b>
+                        <?= Yii::t('app', 'class') ?> : <b><?= $model->receiverClass ? $model->receiverClass->receiverClassSource->name : '-' ?></b>
                     </li>
             </ul>
         </div>

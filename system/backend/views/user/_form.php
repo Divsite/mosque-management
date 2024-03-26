@@ -48,10 +48,10 @@ $select_code = ArrayHelper::map(Branch::find()->asArray()->all(),'code', functio
         <div class="col-lg-4">
 
             <?= $form->field($model, 'type')->widget(Select2::classname(),[
-                    'data' => $select_type,
+                    'data' => UserType::getListUserType(),
                     'options' => [
                         'placeholder' => Yii::t('app', 'select_type'),
-                        'value' => $model->isNewRecord ? 'B' : $model->type,
+                        'value' => $model->type,
                     ],
                     'pluginOptions' => [
                         'allowClear' => false
@@ -105,6 +105,7 @@ $select_code = ArrayHelper::map(Branch::find()->asArray()->all(),'code', functio
                     'data' => $select_level,
                     'options' => [
                         'placeholder' => Yii::t('app', 'select_level'),
+                        'value' => md5($model->level),
                     ],
                     'pluginOptions' => [
                         'allowClear' => false
@@ -201,7 +202,7 @@ $('#user-type').on('change', function(e) {
             data_level = '<option></option>';
 
             $.each(data.data_level, function(i, val) {
-                if (val.type == 'W' || val.type == "L") {
+                if (val.type == 'W' || val.type == "L" || val.type == "D") {
                     // console.log(val.type);
                     data_level+= '<option value="' + val.code + '">' + val.name + '</option>';
                 }
@@ -255,7 +256,8 @@ $('#user-code').on('change', function(e) {
     $.post('$url_user_level' + '?code=' + this_val + '&type=' + typeVal, function(data) {
         if (data.status) {
             let dataLevel = data.data_level;
-            if (typeVal == 'B') {
+            console.log(dataLevel);
+            if (typeVal == 'B' || typeVal == 'L' || typeVal == 'D') {
                 $.each(dataLevel, function(i, val) {
                     data_level_option += '<option value="' + val.code + '">' + val.name + '</option>';
                 });

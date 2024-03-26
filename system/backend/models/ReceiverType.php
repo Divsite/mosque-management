@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "receiver_type".
@@ -53,5 +54,16 @@ class ReceiverType extends \yii\db\ActiveRecord
             'is_active' => Yii::t('app', 'is_active'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
+    }
+
+    public static function getListReceiverType()
+    {
+        return ArrayHelper::map(
+            static::find()
+                ->where([
+                    'branch_code' => Yii::$app->user->identity->code, 
+                    'is_active' => self::ACTIVE,
+                ])->all(), 'id', 'name'
+        );
     }
 }

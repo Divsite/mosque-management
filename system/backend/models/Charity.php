@@ -68,4 +68,34 @@ class Charity extends \yii\db\ActiveRecord
     {
         return $this->hasOne(CharityManually::class, ['charity_id' => 'id']);
     }
+    
+    public function getCharityZakatFitrah()
+    {
+        return $this->hasOne(CharityZakatFitrah::class, ['charity_id' => 'id']);
+    }
+    
+    public function getCharityZakatFidyah()
+    {
+        return $this->hasOne(CharityZakatFidyah::class, ['charity_id' => 'id']);
+    }
+    
+    public function getCharityInfaq()
+    {
+        return $this->hasOne(CharityInfaq::class, ['charity_id' => 'id']);
+    }
+    
+    public function getCharitySodaqoh()
+    {
+        return $this->hasOne(CharitySodaqoh::class, ['charity_id' => 'id']);
+    }
+
+    public function getCharityZakatMal()
+    {
+        return $this->hasOne(CharityZakatMal::class, ['charity_id' => 'id']);
+    }
+    
+    public function getCharityWaqaf()
+    {
+        return $this->hasOne(CharityWaqaf::class, ['charity_id' => 'id']);
+    }
 }

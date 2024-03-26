@@ -5,6 +5,7 @@ namespace backend\models;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use backend\models\ReceiverClass;
+use Yii;
 
 /**
  * ReceiverClassSearch represents the model behind the search form of `backend\models\ReceiverClass`.
@@ -17,8 +18,8 @@ class ReceiverClassSearch extends ReceiverClass
     public function rules()
     {
         return [
-            [['id', 'get_rice'], 'integer'],
-            [['name', 'timestamp'], 'safe'],
+            [['id', 'get_rice', 'is_active', 'receiver_class_source_id'], 'integer'],
+            [['timestamp', 'registration_year'], 'safe'],
             [['get_money'], 'number'],
         ];
     }
@@ -41,7 +42,7 @@ class ReceiverClassSearch extends ReceiverClass
      */
     public function search($params)
     {
-        $query = ReceiverClass::find();
+        $query = ReceiverClass::find()->where(['branch_code' => Yii::$app->user->identity->code]);
 
         // add conditions that should always apply here
 
@@ -60,12 +61,13 @@ class ReceiverClassSearch extends ReceiverClass
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
+            'receiver_class_source_id' => $this->receiver_class_source_id,
             'get_money' => $this->get_money,
             'get_rice' => $this->get_rice,
             'timestamp' => $this->timestamp,
+            'registration_year' => $this->registration_year,
+            'is_active' => $this->is_active,
         ]);
-
-        $query->andFilterWhere(['like', 'name', $this->name]);
 
         return $dataProvider;
     }

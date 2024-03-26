@@ -111,6 +111,13 @@ $fontawesome = ['fab fa-accessible-icon' => 'fa-accessible-icon', 'fab fa-accuso
                         },
                     ],
                     [
+                        'format' => 'raw',
+                        'attribute' => 'seq',
+                        'value' => function ($data) {
+                            return '<label class="label label-success">' . $data['seq'] . '</label>';
+                        },
+                    ],
+                    [
                         'filter' => ['app-frontend-webapps' => 'FRONTEND', 'app-backend-webapps' => 'BACKEND'],
                         'attribute' => 'module',
                         'value' => function ($data) {
@@ -175,13 +182,6 @@ $fontawesome = ['fab fa-accessible-icon' => 'fa-accessible-icon', 'fab fa-accuso
 
                             return Html::a('Live Url', $url_);
                         }, 
-                    ],
-                    [
-                        'format' => 'raw',
-                        'attribute' => 'seq',
-                        'value' => function ($data) {
-                            return '<label class="label label-success">' . $data['seq'] . '</label>';
-                        },
                     ],
                     [
                         'format' => 'raw',

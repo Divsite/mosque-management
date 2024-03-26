@@ -46,10 +46,10 @@ class CharitySearch extends Charity
         if ($user->isSuperadmin()) 
         {
             $query = Charity::find()
-                    ->with('charityType');
+            ->with('charityType', 'charityManually', 'charityZakatFitrah', 'charityZakatFidyah', 'charityInfaq', 'charitySodaqoh', 'charityZakatMal', 'charityWaqaf');
         } else {
             $query = Charity::find()
-                    ->with('charityType')
+                    ->with('charityType', 'charityManually', 'charityZakatFitrah', 'charityZakatFidyah', 'charityInfaq', 'charitySodaqoh', 'charityZakatMal', 'charityWaqaf')
                     ->where(['branch_code' => Yii::$app->user->identity->code]);
         }
 

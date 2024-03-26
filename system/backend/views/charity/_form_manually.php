@@ -41,6 +41,16 @@ use kartik\money\MaskMoney;
         ]);
         ?>
 
+        <?= $form->field($charityManually, 'total_rice')->textInput([
+                'type' => 'number',
+                'step' => '0.1',
+                'placeholder' => Yii::t('app', 'total_rice'),
+                'addon' => ['append' => [
+                    'content'=> 'LITER'
+                ]],
+            ])
+        ?>
+
     </div>
 
 </div>

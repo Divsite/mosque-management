@@ -82,6 +82,7 @@ class ReceiverSearch extends Receiver
             'citizens_association_id' => $this->citizens_association_id,
             'neighborhood_association_id' => $this->neighborhood_association_id,
             'registration_year' => $this->registration_year,
+            'status' => $this->status,
             'timestamp' => $this->timestamp,
         ]);
 

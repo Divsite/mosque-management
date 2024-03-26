@@ -71,50 +71,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $neighBorhoods = NeighborhoodAssociation::find()->all();
-
-        $totalCouponQurbanByClass = [];
-
-        $no = 1;
-
-        foreach ($neighBorhoods as $neighborhood) {
-            
-            $totalQurbanCoupon = Receiver::find()
-                ->where([
-                    'branch_code' => Yii::$app->user->identity->code,
-                    'neighborhood_association_id' => $neighborhood->id,
-                ])
-                ->count();
-
-            $totalClaimQurbanCoupon = Receiver::find()
-                ->where([
-                    'branch_code' => Yii::$app->user->identity->code,
-                    'neighborhood_association_id' => $neighborhood->id,
-                    'status' => Receiver::CLAIM
-                ])
-                ->count();
-
-            $totalNotClaimQurbanCoupon = Receiver::find()
-                ->where([
-                    'branch_code' => Yii::$app->user->identity->code,
-                    'neighborhood_association_id' => $neighborhood->id,
-                    'status' => Receiver::NOT_CLAIM
-                ])
-                ->count();
-
-            $totalCouponQurbanByClass[] = [
-                'no' => $no++,
-                'name' => $neighborhood->name,
-                'total_qurban_coupon' => $totalQurbanCoupon,
-                'total_claim_qurban_coupon' => $totalClaimQurbanCoupon,
-                'total_not_claim_qurban_coupon' => $totalNotClaimQurbanCoupon,
-            ];
-        }
-
-        return $this->render('index', [
-            'neighBorhoods' => $neighBorhoods,
-            'totalCouponQurbanByClass' => $totalCouponQurbanByClass,
-        ]);
+        return $this->render('index');
     }
 
     /**

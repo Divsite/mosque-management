@@ -67,7 +67,7 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                                 'attribute' => 'receiver_class_id',
                                 'filter' => ArrayHelper::map(ReceiverClass::find()->all(), 'id', 'name'),
                                 'value' => function ($model) {
-                                    return $model->receiverClass ? $model->receiverClass->name : null;
+                                    return $model->receiverClass ? $model->receiverClass->receiverClassSource->name : null;
                                 },
                             ],
 
@@ -130,14 +130,23 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                                             <thead>
                                                 <tr>
                                                     <th><?= Yii::t('app', 'ID') ?></th>
-                                                    <th><?= Yii::t('app', 'name') ?></th>
+                                                    <th><?= Yii::t('app', 'officer_id') ?></th>
+                                                    <th><?= Yii::t('app', 'is_paid') ?></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php $no=1; foreach ($model->listOfficersByReceiver() as $officer): ?>
                                                     <tr>
                                                         <td><?= $no++ ?></td>
-                                                        <td><?= $officer->officer->user->name?></td>
+                                                        <td><?= $officer->officer->user->name ?></td>
+                                                        <?php
+                                                            $paidStatus = $officer->listPaidStatus();
+                                                            $iconClass = $paidStatus == Yii::t('app', 'is_paid_yes') ? 'fa fa-check'  : 'fa fa-times';
+                                                            $buttonClass = $paidStatus == Yii::t('app', 'is_paid_yes') ? 'btn-success' : 'btn-danger';
+                                                        ?>
+                                                        <td>
+                                                            <?= Html::button(Html::tag('i', $paidStatus, ['class' => $iconClass]), ['class' => 'btn ' . $buttonClass]) ?>
+                                                        </td>
                                                     </tr>
                                                 <?php endforeach ?>
                                             </tbody>
