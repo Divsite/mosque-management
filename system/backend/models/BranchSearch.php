@@ -17,7 +17,7 @@ class BranchSearch extends Branch
     public function rules()
     {
         return [
-            [['code', 'bch_type', 'bch_name', 'bch_address'], 'safe'],
+            [['code', 'bch_type', 'bch_name', 'bch_category_id', 'bch_address'], 'safe'],
         ];
     }
 
@@ -54,6 +54,10 @@ class BranchSearch extends Branch
             // $query->where('0=1');
             return $dataProvider;
         }
+
+        $query->andFilterWhere([
+            'bch_category_id' => $this->bch_category_id,
+        ]);
 
         // grid filtering conditions
         $query->andFilterWhere(['like', 'code', $this->code])

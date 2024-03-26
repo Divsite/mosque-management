@@ -36,7 +36,7 @@ class CharityManually extends \yii\db\ActiveRecord
             // [['charity_id'], 'required'],
             [['charity_id'], 'integer'],
             [['customer_address'], 'string'],
-            [['payment_total'], 'number'],
+            [['payment_total', 'total_rice'], 'number'],
             [['payment_date', 'timestamp'], 'safe'],
             [['customer_email'], 'email'],
             [['customer_name', 'customer_email', 'customer_number'], 'string', 'max' => 255],
@@ -50,14 +50,15 @@ class CharityManually extends \yii\db\ActiveRecord
     {
         return [
             'id' => Yii::t('app', 'ID'),
-            'charity_id' => Yii::t('app', 'Charity ID'),
-            'customer_name' => Yii::t('app', 'Customer Name'),
-            'customer_email' => Yii::t('app', 'Customer Email'),
-            'customer_address' => Yii::t('app', 'Customer Address'),
-            'customer_number' => Yii::t('app', 'Customer Number'),
-            'payment_total' => Yii::t('app', 'Payment Total'),
-            'payment_date' => Yii::t('app', 'Payment Date'),
-            'timestamp' => Yii::t('app', 'Timestamp'),
+            'charity_id' => Yii::t('app', 'charity_id'),
+            'customer_name' => Yii::t('app', 'customer_name'),
+            'customer_email' => Yii::t('app', 'customer_email'),
+            'customer_address' => Yii::t('app', 'customer_address'),
+            'customer_number' => Yii::t('app', 'customer_number'),
+            'payment_total' => Yii::t('app', 'payment_total'),
+            'payment_date' => Yii::t('app', 'payment_date'),
+            'total_rice' => Yii::t('app', 'total_rice'),
+            'timestamp' => Yii::t('app', 'timestamp'),
         ];
     }
 

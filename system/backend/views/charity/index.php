@@ -1,10 +1,11 @@
 <?php
 
+use backend\models\Charity;
 use backend\models\CharityType;
+use kartik\date\DatePicker;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
-use yii\widgets\Pjax;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\CharitySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -50,8 +51,75 @@ $this->params['breadcrumbs'][] = $this->title;
                             'contentOptions' => ['style' => 'text-align:center']
                         ],
 
-                        'branch_code',
-                        'year',
+                        [
+                            'format' => 'raw',
+                            'label' => Yii::t('app', 'customer_name'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually ? $model->charityManually->customer_name : null;
+                                } else {
+                                    switch ($model->type_charity_id) {
+                                        case $model->charityType->charitySource->code == "FTRH":
+                                            return $model->charityZakatFitrah ? $model->charityZakatFitrah->customer_name : null;
+                                        case $model->charityType->charitySource->code == "FDYH":
+                                            return $model->charityZakatFidyah ? $model->charityZakatFidyah->customer_name : null;
+                                        case $model->charityType->charitySource->code == "INFQ":
+                                            return $model->charityInfaq ? $model->charityInfaq->customer_name : null;
+                                        case $model->charityType->charitySource->code == "SQDH":
+                                            return $model->charitySodaqoh ? $model->charitySodaqoh->customer_name : null;
+                                        case $model->charityType->charitySource->code == "ZMAL":
+                                            return $model->charityZakatMal ? $model->charityZakatMal->customer_name : null;
+                                        case $model->charityType->charitySource->code == "WQAF":
+                                            return $model->charityWaqaf ? $model->charityWaqaf->customer_name : null;
+                                        default:
+                                            return '-';
+                                    }
+                                }
+                            },
+                        ],
+                        
+                        [
+                            'format' => 'raw',
+                            'label' => Yii::t('app', 'customer_number'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually ? $model->charityManually->customer_number : null;
+                                } else {
+                                    switch ($model->type_charity_id) {
+                                        case $model->charityType->charitySource->code == "FTRH":
+                                            return $model->charityZakatFitrah ? $model->charityZakatFitrah->customer_number : null;
+                                        case $model->charityType->charitySource->code == "FDYH":
+                                            return $model->charityZakatFidyah ? $model->charityZakatFidyah->customer_number : null;
+                                        case $model->charityType->charitySource->code == "INFQ":
+                                            return $model->charityInfaq ? $model->charityInfaq->customer_number : null;
+                                        case $model->charityType->charitySource->code == "SQDH":
+                                            return $model->charitySodaqoh ? $model->charitySodaqoh->customer_number : null;
+                                        case $model->charityType->charitySource->code == "ZMAL":
+                                            return $model->charityZakatMal ? $model->charityZakatMal->customer_number : null;
+                                        case $model->charityType->charitySource->code == "WQAF":
+                                            return $model->charityWaqaf ? $model->charityWaqaf->customer_number : null;
+                                        default:
+                                            return '-';
+                                    }
+                                }
+                            },
+                        ],
+
+                        [
+                            'attribute' => 'year',
+                            'filter' => DatePicker::widget([
+                                'model' => $searchModel,
+                                'attribute' => 'year',
+                                'options' => ['class' => 'form-control', 'id' => 'registration-year-filter'],
+                                'pluginOptions' => [
+                                    'format' => 'yyyy',
+                                    'autoclose' => true,
+                                    'startView' => 'years',
+                                    'minViewMode' => 'years',
+                                ],
+                            ]),
+                        ],
+
                         [
                             'format' => 'raw',
                             'attribute' => 'type',
@@ -69,16 +137,16 @@ $this->params['breadcrumbs'][] = $this->title;
                             'headerOptions' => ['style' => 'text-align:center'],
                             'contentOptions' => ['style' =>'text-align:center;'],
                             'attribute' => 'type_charity_id',
-                            'filter' => ArrayHelper::map(CharityType::find()->all(), 'id', 'name'),
+                            'filter' => ArrayHelper::map(CharityType::find()->with('charitySource')->all(), 'id', 'charitySource.name'),
                             'value' => function ($model) {
-                                return $model->charityType->name;
+                                return $model->charityType->charitySource->name;
                             },
                         ],
 
                         [
                             'class' => 'yii\grid\ActionColumn',
                             'header' => 'Action',
-                            'template' => '{delete}',
+                            'template' => '{view} {update} {delete} {print-invoice}',
                             'buttons' => [
                             'view' => function($url, $model) {
                                 return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-search"></i></button>', 
@@ -89,6 +157,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                 return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-edit"></i></button>', 
                                     ['update', 'id' => $model['id']], 
                                     ['title' => 'Update']);
+                            },
+                            'print-invoice' => function($url, $model) {
+                                return Html::a('<button class="btn btn-sm btn-warning"><i class="fa fa-print"></i></button>', 
+                                    ['print-invoice', 'id' => $model['id']], 
+                                    ['title' => 'Cetak Invoice', 'data' => 
+                                    ['pjax' => 1]
+                                ]);
                             },
                             'delete' => function($url, $model) {
                                 return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>', 
@@ -112,3 +187,19 @@ $this->params['breadcrumbs'][] = $this->title;
         
     </div>
 </div>
+
+<?php
+$js = <<< JS
+    $('#registration-year-filter').on('click', function(){
+        $(this).datepicker({
+            changeYear: true,
+            yearRange: '1900:' + new Date().getFullYear(),
+            dateFormat: 'yy',
+            showButtonPanel: true,
+        }).focus();
+    });
+JS;
+
+$this->registerJs($js);
+
+?>

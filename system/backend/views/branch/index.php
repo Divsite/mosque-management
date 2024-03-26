@@ -1,7 +1,9 @@
 <?php
 
+use backend\models\BranchCategory;
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\helpers\ArrayHelper;
 
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\BranchSearch */
@@ -48,7 +50,16 @@ $this->params['breadcrumbs'][] = $this->title;
                         'code',
                         'bch_type',
                         'bch_name',
-                        'bch_address',
+                        [
+                            'format' => 'raw',
+                            'headerOptions' => ['style' => 'text-align:center'],
+                            'contentOptions' => ['style' =>'text-align:center;'],
+                            'attribute' => 'bch_category_id',
+                            'filter' => ArrayHelper::map(BranchCategory::find()->all(), 'id', 'name'),
+                            'value' => function ($model) {
+                                return $model->branchCategory->name;
+                            },
+                        ],
 
                         [
                             'class' => 'yii\grid\ActionColumn',

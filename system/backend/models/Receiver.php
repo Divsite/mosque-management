@@ -28,8 +28,13 @@ use yii\helpers\Html;
  */
 class Receiver extends \yii\db\ActiveRecord
 {
+    // status for sacrifice
     const NOT_CLAIM = 1;
     const CLAIM = 2;
+
+    // status for zakat
+    const DONE_STATUS = 3;
+    const PENDING_STATUS = 4;
     /**
      * {@inheritdoc}
      */
@@ -255,7 +260,7 @@ class Receiver extends \yii\db\ActiveRecord
             ->one();
 
         if ($existingReceiverClassByThisYear) {
-            $receiverClassName = $existingReceiverClassByThisYear->receiverClass->name;
+            $receiverClassName = $existingReceiverClassByThisYear->receiverClass->receiverClassSource->name;
             $this->addError($attribute, Yii::t('app', 'receiver_class_must_be_unique_within_the_same_year', [
                 'receiverClassName' => $receiverClassName
             ]));

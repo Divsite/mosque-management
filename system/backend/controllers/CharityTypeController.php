@@ -95,9 +95,38 @@ class CharityTypeController extends Controller
     public function actionCreate()
     {
         $model = new CharityType();
+        
+        $model->scenario = CharityType::SCENARIO_CREATE;
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $model->branch_code = Yii::$app->user->identity->code;
+            $model->registration_year = date('Y');
+            $model->save(false);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            Yii::$app->getSession()->setFlash(Yii::t('app', 'charity_type_success_created'), [
+                    'type'     => 'success',
+                    'duration' => 5000,
+                    'title'    => Yii::t('app', 'system_information'),
+                    'message'  => Yii::t('app', 'data_created'),
+                ]
+            );
+            return $this->redirect(['index']);
+        } else {
+            if ($model->errors)
+            {
+                $message = "";
+                foreach ($model->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2;
+                    }
+                }
+                Yii::$app->getSession()->setFlash('charity_type_failed_created', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
         }
 
         return $this->render('create', [
@@ -116,8 +145,37 @@ class CharityTypeController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        $model->scenario = CharityType::SCENARIO_UPDATE;
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $model->branch_code = Yii::$app->user->identity->code;
+            $model->registration_year = date('Y');
+            $model->save(false);
+
+            Yii::$app->getSession()->setFlash(Yii::t('app', 'charity_type_success_updated'), [
+                    'type'     => 'success',
+                    'duration' => 5000,
+                    'title'    => Yii::t('app', 'system_information'),
+                    'message'  => Yii::t('app', 'data_updated'),
+                ]
+            );
+            return $this->redirect(['index']);
+        } else {
+            if ($model->errors)
+            {
+                $message = "";
+                foreach ($model->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2;
+                    }
+                }
+                Yii::$app->getSession()->setFlash('charity_type_failed_updated', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
         }
 
         return $this->render('update', [

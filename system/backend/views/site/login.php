@@ -15,8 +15,11 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="login-box">
         
+        <div class="login-logo" style="margin-bottom: 0;">
+            <img src="<?= Url::base() ?>/dist/img/nexcity_logo_elipse.png" style="max-width: 130px;" alt="Nexcity Logo">
+        </div>
         <div class="login-logo">
-            <a href="<?=Url::base()?>"><b>Mosque</b> HUB</a>
+            <a href="<?=Url::base()?>"><b>Nexcity</b> APPS</a>
         </div>
 
         <div class="card">

@@ -1,5 +1,6 @@
 <?php
 
+use backend\models\BranchCategory;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\select2\Select2;
@@ -207,35 +208,17 @@ foreach ($frontend_controllerlist as $frontend_controller)
 
         <div class="col-lg-3">
 
-            <?= $form->field($model, 'url_controller')->widget(Select2::classname(),[
-                    'data' => ArrayHelper::map($backend_fulllist, 'key', 'key'),
+            <?= $form->field($model, 'bch_category_id')->widget(Select2::classname(),[
+                    'data' => BranchCategory::getListBranchCategory(),
                     'options' => [
-                        'placeholder' => Yii::t('app', 'select_controller'),
-                        'value' => $model->isNewRecord ? 'L' : $model->url_controller,
+                        'placeholder' => Yii::t('app', 'select_category'),
+                        'value' => $model->bch_category_id,
                     ],
                     'pluginOptions' => [
                         'allowClear' => true
                     ],
                 ]);
             ?>
-
-            <?= $form->field($model, 'url_view')->widget(Select2::classname(),[
-                    'data' => $model->isNewRecord ? null : [$model->url_view => $model->url_view],
-                    'options' => [
-                        'placeholder' => Yii::t('app', 'select_view'),
-                        'value' => $model->isNewRecord ? null : $model->url_view,
-                    ],
-                    'pluginOptions' => [
-                        'allowClear' => true
-                    ],
-                ]);
-            ?>
-
-            <?= $form->field($model, 'url_parameter')->textInput(['maxlength' => true]) ?>
-
-        </div>    
-
-        <div class="col-lg-3">
 
             <?= $form->field($model, 'seq')->textInput(['type' => 'number', 'min' => 0, 'value' => $model->isNewRecord ? 0 : $model->seq]) ?>
 
@@ -267,7 +250,35 @@ foreach ($frontend_controllerlist as $frontend_controller)
                     ],
                 ]);
             ?>
-            
+
+        </div>    
+
+        <div class="col-lg-3">
+            <?= $form->field($model, 'url_controller')->widget(Select2::classname(),[
+                    'data' => ArrayHelper::map($backend_fulllist, 'key', 'key'),
+                    'options' => [
+                        'placeholder' => Yii::t('app', 'select_controller'),
+                        'value' => $model->isNewRecord ? 'L' : $model->url_controller,
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ]);
+            ?>
+
+            <?= $form->field($model, 'url_view')->widget(Select2::classname(),[
+                    'data' => $model->isNewRecord ? null : [$model->url_view => $model->url_view],
+                    'options' => [
+                        'placeholder' => Yii::t('app', 'select_view'),
+                        'value' => $model->isNewRecord ? null : $model->url_view,
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                ]);
+            ?>
+
+            <?= $form->field($model, 'url_parameter')->textInput(['maxlength' => true]) ?>
         </div>    
 
     </div>

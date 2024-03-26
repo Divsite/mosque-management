@@ -272,7 +272,7 @@ class UserController extends Controller
     {
         /* -------------------------------------- START DEMO VERSION ----------------------------------------- */
 
-        if (in_array($id, [1,2,3,4,5]))
+        if (in_array($id, [1,2,3,4]))
         {
             Yii::$app->getSession()->setFlash('user_update_demo', [
                     'type'     => 'error',
@@ -314,6 +314,7 @@ class UserController extends Controller
 
             $model->auth_key = Yii::$app->security->generateRandomString();
             $model->password_hash = Yii::$app->security->generatePasswordHash($model->password);
+            $model->level = md5($model->level);
             $model->save();
 
             /* Application Log Database */

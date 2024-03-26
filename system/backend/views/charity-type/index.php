@@ -1,8 +1,10 @@
 <?php
 
+use backend\models\CharityType;
+use backend\models\CharityTypeSource;
+use kartik\date\DatePicker;
 use yii\helpers\Html;
 use yii\grid\GridView;
-use yii\widgets\Pjax;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\CharityTypeSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -47,21 +49,88 @@ $this->params['breadcrumbs'][] = $this->title;
                             'contentOptions' => ['style' => 'text-align:center']
                         ],
 
-                        'name',
-                        'desc',
-                        'min',
-                        'max',
+                        [
+                            'format' => 'raw',
+                            'headerOptions' => ['style' => 'text-align:center'],
+                            'contentOptions' => ['style' =>'text-align:center;'],
+                            'attribute' => 'charity_type_source_id',
+                            'filter' => CharityTypeSource::getListCharityTypeSource(),
+                            'value' => function ($model) {
+                                return $model->charitySource->name;
+                            },
+                        ],
+
+                        // 'min:currency:Min',
+                        // 'max:currency:Max',
+                        [
+                            'attribute' => 'min',
+                            'value' => function ($model) {
+                                if ($model->min) {
+                                    return Yii::$app->formatter->asCurrency($model->min, 'IDR');
+                                } else {
+                                    return '-';
+                                }
+                            },
+                        ],
+                        
+                        [
+                            'attribute' => 'max',
+                            'value' => function ($model) {
+                                if ($model->max) {
+                                    return Yii::$app->formatter->asCurrency($model->max, 'IDR');
+                                } else {
+                                    return '-';
+                                }
+                            },
+                        ],
+
+                        [
+                            'attribute' => 'total_rice',
+                            'value' => function ($model) {
+                                if ($model->total_rice) {
+                                    return $model->total_rice . ' LITER';
+                                } else {
+                                    return '-';
+                                }
+                            },
+                        ],
+
+                        [
+                            'attribute' => 'registration_year',
+                            'filter' => DatePicker::widget([
+                                'model' => $searchModel,
+                                'attribute' => 'registration_year',
+                                'options' => ['class' => 'form-control', 'id' => 'registration-year-filter'],
+                                'pluginOptions' => [
+                                    'format' => 'yyyy',
+                                    'autoclose' => true,
+                                    'startView' => 'years',
+                                    'minViewMode' => 'years',
+                                ],
+                            ]),
+                        ],
+
+                        [
+                            'format' => 'raw',
+                            'attribute' => 'is_active',
+                            'value' => function ($model) {
+                                if ($model->is_active == CharityType::ACTIVE) {
+                                    return '<i class="fa fa-check"></i>';
+                                } else {
+                                    return '<i class="fa fa-times"></i>';
+                                }
+                            },
+                            'filter'=> [
+                                0 => Yii::t('app', 'nonactive'),
+                                1 => Yii::t('app', 'active'),
+                            ],
+                        ],
 
                         [
                             'class' => 'yii\grid\ActionColumn',
                             'header' => 'Action',
-                            'template' => '{view} {update} {delete}',
+                            'template' => '{update} {delete}',
                             'buttons' => [
-                            'view' => function($url, $model) {
-                                return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-search"></i></button>', 
-                                    ['view', 'id' => $model['id']], 
-                                    ['title' => 'View']);
-                            },
                             'update' => function($url, $model) {
                                 return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-edit"></i></button>', 
                                     ['update', 'id' => $model['id']], 
@@ -91,3 +160,18 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 </div>
 
+<?php
+$js = <<< JS
+    $('#registration-year-filter').on('click', function(){
+        $(this).datepicker({
+            changeYear: true,
+            yearRange: '1900:' + new Date().getFullYear(),
+            dateFormat: 'yy',
+            showButtonPanel: true,
+        }).focus();
+    });
+JS;
+
+$this->registerJs($js);
+
+?>

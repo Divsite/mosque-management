@@ -7,16 +7,25 @@ use backend\models\Receiver;
 use backend\models\ReceiverSearch;
 use backend\models\ReceiverType;
 use backend\models\Branch;
+use backend\models\NeighborhoodAssociation;
 use backend\models\Officer;
 use backend\models\Populate;
 use backend\models\ReceiverClass;
 use backend\models\ReceiverDocumentationImage;
+use backend\models\ReceiverExpense;
+use backend\models\ReceiverExpenseDetail;
+use backend\models\ReceiverExpenseHandleCreatedUpdated;
+use backend\models\ReceiverExpenseSearch;
+use backend\models\ReceiverOfficer;
+use backend\models\ReceiverOperationalType;
 use backend\models\ReceiverResident;
 use backend\models\Resident;
 use backend\models\User;
+use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
 use yii\web\UploadedFile;
 
 /**
@@ -150,7 +159,7 @@ class ReceiverController extends Controller
                     'victim' => null,
                 ];
 
-                $model->status = Receiver::NOT_CLAIM;
+                $model->status = Receiver::PENDING_STATUS;
                 $model->status_update = date('Y-m-d H:i:s');
 
                 $model->save(false);
@@ -422,8 +431,8 @@ class ReceiverController extends Controller
         $receiverClass = ReceiverClass::findOne(['id' => $id]);
 
         $result = json_encode(array(
-                    'get_money' => $receiverClass->get_money ? $receiverClass->get_money : null,
-                    'get_rice' => $receiverClass->get_rice ? $receiverClass->get_rice : null,
+                    'get_money' => $receiverClass->get_money ? Yii::$app->formatter->asCurrency($receiverClass->get_money, 'IDR') : null,
+                    'get_rice' => $receiverClass->get_rice ? $receiverClass->get_rice . ' Liter' : null,
                 ));
 
         return $result;
@@ -431,7 +440,443 @@ class ReceiverController extends Controller
 
     public function actionReport()
     {
+        /**
+        * LAPORAN ZAKAT
+        */
+        $receiver = Receiver::find()
+            ->with(['receiverType', 'receiverClass', 'receiverResidents'])
+            ->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'status' => Receiver::DONE_STATUS,
+                'receiver_type_id' => ReceiverType::ZAKAT,
+            ])
+            ->groupBy('receiver_class_id');
+
+        $receiverExpense = ReceiverExpense::find()
+            ->with(['operationalType', 'receiverType'])
+            ->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'receiver_type_id' => ReceiverType::ZAKAT,
+            ])
+            ->groupBy('receiver_operational_code');
         
+        if (Yii::$app->request->post('registration_year')) {
+            $receiver->andWhere(['registration_year' => Yii::$app->request->post('registration_year')]);
+            $receiverExpense->andWhere(['registration_year' => Yii::$app->request->post('registration_year')]);
+        }
+
+        // echo "<pre>";
+        //     var_dump(Yii::$app->request->post('registration_year'));
+        //     die;
+
+        $summaryDistributionExpense = new ActiveDataProvider([
+            'query' => $receiver,
+        ]);
+
+        $summaryGeneralExpense = new ActiveDataProvider([
+            'query' => $receiverExpense,
+        ]);
+
+        /**
+         * LAPORAN QURBAN
+         */
+
+        $neighBorhoods = NeighborhoodAssociation::find()->all();
+
+        $totalCouponQurbanByClass = [];
+
+        $no = 1;
+
+        foreach ($neighBorhoods as $neighborhood) {
+            
+            $totalQurbanCoupon = Receiver::find()
+                ->where([
+                    'branch_code' => Yii::$app->user->identity->code,
+                    'neighborhood_association_id' => $neighborhood->id,
+                ])
+                ->count();
+
+            $totalClaimQurbanCoupon = Receiver::find()
+                ->where([
+                    'branch_code' => Yii::$app->user->identity->code,
+                    'neighborhood_association_id' => $neighborhood->id,
+                    'status' => Receiver::CLAIM
+                ])
+                ->count();
+
+            $totalNotClaimQurbanCoupon = Receiver::find()
+                ->where([
+                    'branch_code' => Yii::$app->user->identity->code,
+                    'neighborhood_association_id' => $neighborhood->id,
+                    'status' => Receiver::NOT_CLAIM
+                ])
+                ->count();
+
+            $totalCouponQurbanByClass[] = [
+                'no' => $no++,
+                'name' => $neighborhood->name,
+                'total_qurban_coupon' => $totalQurbanCoupon,
+                'total_claim_qurban_coupon' => $totalClaimQurbanCoupon,
+                'total_not_claim_qurban_coupon' => $totalNotClaimQurbanCoupon,
+            ];
+        }
+
+        return $this->render('report', [
+            'summaryDistributionExpense' => $summaryDistributionExpense,
+            'summaryGeneralExpense' => $summaryGeneralExpense,
+            'neighBorhoods' => $neighBorhoods,
+            'totalCouponQurbanByClass' => $totalCouponQurbanByClass,
+        ]);
+    }
+    
+    public function actionExpenseIndex()
+    {
+        $searchModel = new ReceiverExpenseSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('/receiver-expense/index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider
+        ]);
+    }
+    
+    public function actionExpenseCreate()
+    {
+        $model = new ReceiverExpense;
+
+        $detailExpenses = [new ReceiverExpenseDetail];
+
+        if ($model->load(Yii::$app->request->post())) {
+            
+            $model->branch_code = Yii::$app->user->identity->code;
+            $model->registration_year = date('Y');
+            $model->created_at = date('Y-m-d h:i:s');
+            $model->updated_at = date('Y-m-d h:i:s');
+            $model->created_by = Yii::$app->user->identity->id;
+            $model->updated_by = Yii::$app->user->identity->id;
+
+            // receiver expense detail validation
+            $detailExpenses = ReceiverExpenseHandleCreatedUpdated::createMultiple(ReceiverExpenseDetail::classname());
+            
+            foreach ($detailExpenses as $key => $value) {
+                $detailExpenses[$key]->scenario = ReceiverExpenseDetail::SCENARIO_CREATE;
+            }
+
+            ReceiverExpenseHandleCreatedUpdated::loadMultiple($detailExpenses, Yii::$app->request->post());
+
+            // ajax validation case if used ajax
+            if (Yii::$app->request->isAjax) {
+                // json format converting
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ArrayHelper::merge(
+                    ActiveForm::validateMultiple($detailExpenses),
+                    ActiveForm::validate($model)
+                );
+            }
+
+            // multiple validation
+            $valid = $model->validate();
+            $valid = ReceiverExpenseHandleCreatedUpdated::validateMultiple($detailExpenses) && $valid;
+            
+            // multiple store with validation
+            if ($valid) {
+                
+                // yii function for transaction process
+                $transaction = \Yii::$app->db->beginTransaction();
+
+                try {
+                    if ($flag = $model->save(false)) {
+                        foreach ($detailExpenses as $item) {
+                            
+                            $item->receiver_expense_id = $model->id;
+
+                            if ($model->receiver_operational_code == ReceiverOperationalType::OFFICER) {
+                                $item->name = null;
+
+                                $receiverOfficer = ReceiverOfficer::find()
+                                    ->joinWith('receiver')
+                                    ->where([
+                                        'officer_id' => $item->officer_id,
+                                        'receiver.receiver_class_id' => $item->receiver_class_id
+                                    ])
+                                    ->one();
+
+                                if ($receiverOfficer) {
+                                    $receiverOfficer->is_paid = ReceiverOfficer::IS_PAID_YES;
+                                    $receiverOfficer->save(false);
+                                }
+
+                            } else {
+                                $item->officer_id = null;
+                                $item->receiver_class_id = null;
+                            }
+
+                            if ($item->qty !== null && is_numeric($item->qty) &&
+                                $item->price !== null && is_numeric($item->price)) {
+                                $item->amount = $item->qty * $item->price;
+                                $model->amount += $item->amount;
+                                $model->save(false);
+                            }
+
+                            $item->created_at = date('Y-m-d h:i:s');
+                            $item->updated_at = date('Y-m-d h:i:s');
+                            $item->created_by = Yii::$app->user->identity->id;
+                            $item->updated_by = Yii::$app->user->identity->id;
+
+                            // failed store
+                            if (!($flag = $item->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+
+                    // success store
+                    if ($flag) {
+                        $transaction->commit();
+
+                        Yii::$app->getSession()->setFlash('receiver_expense_create_success', [
+                            'type'     => 'success',
+                            'duration' => 5000,
+                            'title'    => Yii::t('app', 'system_information'),
+                            'message'  => Yii::t('app', 'expense_has_been_successfully_created'),
+                        ]);
+
+                        return $this->redirect(['expense-index']);
+                    }
+                    
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            } else {
+                if ($model->errors)
+                {
+                    $message = "";
+                    foreach ($model->errors as $key => $value) {
+                        foreach ($value as $key1 => $value2) {
+                            $message .= $value2;
+                        }
+                    }
+                    Yii::$app->getSession()->setFlash('receiver_expense_status_failed', [
+                            'type'     => 'error',
+                            'duration' => 5000,
+                            'title'  => Yii::t('app', 'error'),
+                            'message'  => $message,
+                        ]
+                    );
+                    return $this->redirect(['expense-index']);
+                }
+
+                foreach ($detailExpenses as $omg => $detailExpense) {
+                    if ($detailExpense->errors)
+                    {
+                        $message = "";
+                        foreach ($detailExpense->errors as $key => $value) {
+                            foreach ($value as $key1 => $value2) {
+                                $message .= $value2;
+                            }
+                        }
+                        Yii::$app->getSession()->setFlash('receiver_expense_detail_status_failed', [
+                                'type'     => 'error',
+                                'duration' => 5000,
+                                'title'  => Yii::t('app', 'error'),
+                                'message'  => $message,
+                            ]
+                        );
+                        return $this->redirect(['expense-index']);
+                    }
+                }
+            }
+        } else {
+            return $this->renderAjax('/receiver-expense/create', [
+                'model' => $model,
+                'detailExpenses' => (empty($detailExpenses)) ? [new ReceiverExpenseDetail] : $detailExpenses
+            ]);
+        }
+    }
+
+    public function actionExpenseUpdate($id)
+    {
+        $model = $this->findModelExpense($id);
+
+        $model->scenario = ReceiverExpense::SCENARIO_UPDATE;
+
+        $detailExpenses = $model->receiverExpenseDetails;
+
+        foreach ($detailExpenses as $key => $value) {
+            $detailExpenses[$key]->scenario = ReceiverExpenseDetail::SCENARIO_UPDATE;
+        }
+
+        if ($model->load(Yii::$app->request->post())) {
+            
+            $model->branch_code = Yii::$app->user->identity->code;
+            $model->registration_year = date('Y');
+            $model->updated_at = date('Y-m-d h:i:s');
+            $model->updated_by = Yii::$app->user->identity->id;
+
+            // receiver expense detail validation
+            $oldIDs = ArrayHelper::map($detailExpenses, 'id', 'id');
+            $detailExpenses = ReceiverExpenseHandleCreatedUpdated::createMultiple(ReceiverExpenseDetail::classname(), $detailExpenses);
+            ReceiverExpenseHandleCreatedUpdated::loadMultiple($detailExpenses, Yii::$app->request->post());
+            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($detailExpenses, 'id', 'id')));
+
+            // ajax validation case if used ajax
+            if (Yii::$app->request->isAjax) {
+                // json format converting
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ArrayHelper::merge(
+                    ActiveForm::validateMultiple($detailExpenses),
+                    ActiveForm::validate($model)
+                );
+            }
+
+            // multiple validation
+            $valid = $model->validate();
+            $valid = ReceiverExpenseHandleCreatedUpdated::validateMultiple($detailExpenses) && $valid;
+            
+            // multiple store with validation
+            if ($valid) {
+                
+                // yii function for transaction process
+                $transaction = \Yii::$app->db->beginTransaction();
+
+                try {
+                    if ($flag = $model->save(false)) {
+                        $totalAmount = 0;
+                        foreach ($detailExpenses as $index => $item) {
+                            
+                            $item->receiver_expense_id = $model->id;
+
+                            if ($model->receiver_operational_code == ReceiverOperationalType::OFFICER) {
+                                $item->name = null;
+
+                                $receiverOfficer = ReceiverOfficer::find()
+                                    ->joinWith('receiver')
+                                    ->where([
+                                        'officer_id' => $item->officer_id,
+                                        'receiver.receiver_class_id' => $item->receiver_class_id
+                                    ])
+                                    ->one();
+
+                                if ($receiverOfficer) {
+                                    $receiverOfficer->is_paid = ReceiverOfficer::IS_PAID_YES;
+                                    $receiverOfficer->save(false);
+                                }
+
+                            } else {
+                                $item->officer_id = null;
+                                $item->receiver_class_id = null;
+                            }
+
+                            if ($item->qty !== null && is_numeric($item->qty) &&
+                                $item->price !== null && is_numeric($item->price)) {
+                                $item->amount = $item->qty * $item->price;
+                                $totalAmount += $item->qty * $item->price;
+                                $model->amount = $totalAmount;
+                                $model->save(false);
+                            }
+
+                            $item->updated_at = date('Y-m-d h:i:s');
+                            $item->updated_by = Yii::$app->user->identity->id;
+
+                            if (! empty($deletedIDs)) {
+                                ReceiverExpenseDetail::deleteAll(['id' => $deletedIDs]);
+                            }
+                            $model->refresh();
+
+                            // failed store
+                            if (!($flag = $item->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+
+                    // success store
+                    if ($flag) {
+                        $transaction->commit();
+
+                        Yii::$app->getSession()->setFlash('receiver_expense_update_success', [
+                            'type'     => 'success',
+                            'duration' => 5000,
+                            'title'    => Yii::t('app', 'system_information'),
+                            'message'  => Yii::t('app', 'expense_has_been_successfully_updated'),
+                        ]);
+
+                        return $this->redirect(['expense-index']);
+                    }
+                    
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            } 
+            else {
+                if ($model->errors)
+                {
+                    
+                    $message = "";
+                    foreach ($model->errors as $key => $value) {
+                        foreach ($value as $key1 => $value2) {
+                            $message .= $value2;
+                        }
+                    }
+                    Yii::$app->getSession()->setFlash('receiver_expense_status_failed', [
+                            'type'     => 'error',
+                            'duration' => 5000,
+                            'title'  => Yii::t('app', 'error'),
+                            'message'  => $message,
+                        ]
+                    );
+                    return $this->redirect(['expense-index']);
+                }
+
+                foreach ($detailExpenses as $omg => $detailExpense) {
+                    if ($detailExpense->errors)
+                    {
+                        $message = "";
+                        foreach ($detailExpense->errors as $key => $value) {
+                            foreach ($value as $key1 => $value2) {
+                                $message .= $value2;
+                            }
+                        }
+                        Yii::$app->getSession()->setFlash('receiver_expense_detail_status_failed', [
+                                'type'     => 'error',
+                                'duration' => 5000,
+                                'title'  => Yii::t('app', 'error'),
+                                'message'  => $message,
+                            ]
+                        );
+                        return $this->redirect(['expense-index']);
+                    }
+                }
+            }
+        } else {
+            return $this->renderAjax('/receiver-expense/update', [
+                'model' => $model,
+                'detailExpenses' => (empty($detailExpenses)) ? [new ReceiverExpenseDetail] : $detailExpenses
+            ]);
+        }
+    }
+
+    public function actionExpenseDelete($id)
+    {
+        $this->findModelExpense($id)->delete();
+
+        return $this->redirect(['expense-index']);
+    }
+
+    protected function findModelExpense($id)
+    {
+        if (($model = ReceiverExpense::findOne($id)) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
+    }
+    
+    public function actionIncomeIndex()
+    {
+        return $this->render('expense');
     }
 
     public function actionAlmsCouponClaim($id, $status, $receiverId)
@@ -449,6 +894,17 @@ class ReceiverController extends Controller
             $model->status_update = date('Y-m-d h:i:s');
             $model->save(false);
 
+            $allShared = ReceiverResident::find()->where(['receiver_id' => $receiverId, 'status' => ReceiverResident::SHARED])->count();
+            $totalResidents = ReceiverResident::find()->where(['receiver_id' => $receiverId])->count();
+
+            if ($allShared == $totalResidents) {
+                $pendingResidents = ReceiverResident::find()->where(['receiver_id' => $receiverId, 'status' => ReceiverResident::NOT_YET_SHARED])->count();
+                if ($pendingResidents == 0) {
+                    $receiver->status = Receiver::DONE_STATUS;
+                    $receiver->save(false);
+                }
+            }
+
             $this->receiverDocumentationImage($receiver, $receiverDocumentationImage);
             $this->residentIdentityHomeImage($model);
 
@@ -462,8 +918,6 @@ class ReceiverController extends Controller
         }
         else
         {
-            // var_dump($model->resident->errors);
-            // die;
             if ($receiverDocumentationImage->errors)
             {
                 $message = "";
