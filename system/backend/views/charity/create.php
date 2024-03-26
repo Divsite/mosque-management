@@ -14,10 +14,6 @@ use kartik\form\ActiveForm;
 $this->title = Yii::t('app', 'Create Charity');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Charities'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
-
-// echo "<pre>";
-// var_dump($charityManually);
-// die;
 ?>
 <div class="card table-card">
     <div class="card-header">
