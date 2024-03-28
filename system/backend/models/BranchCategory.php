@@ -14,6 +14,8 @@ use yii\helpers\ArrayHelper;
  */
 class BranchCategory extends \yii\db\ActiveRecord
 {
+    const MOSQUE = 3;
+    
     /**
      * {@inheritdoc}
      */

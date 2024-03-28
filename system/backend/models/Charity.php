@@ -59,6 +59,35 @@ class Charity extends \yii\db\ActiveRecord
         ];
     }
 
+    public function beforeDelete()
+    {
+        if (parent::beforeDelete()) {
+            if ($this->charityManually) {
+                $this->charityManually->delete();
+            }
+            if ($this->charityZakatFitrah) {
+                $this->charityZakatFitrah->delete();
+            }
+            if ($this->charityZakatFidyah) {
+                $this->charityZakatFidyah->delete();
+            }
+            if ($this->charityInfaq) {
+                $this->charityInfaq->delete();
+            }
+            if ($this->charitySodaqoh) {
+                $this->charitySodaqoh->delete();
+            }
+            if ($this->charityZakatMal) {
+                $this->charityZakatMal->delete();
+            }
+            if ($this->charityWaqaf) {
+                $this->charityWaqaf->delete();
+            }
+            return true;
+        }
+        return false;
+    }
+
     public function getCharityType()
     {
         return $this->hasOne(CharityType::class, ['id' => 'type_charity_id']);
@@ -97,5 +126,24 @@ class Charity extends \yii\db\ActiveRecord
     public function getCharityWaqaf()
     {
         return $this->hasOne(CharityWaqaf::class, ['charity_id' => 'id']);
+    }
+
+    public function findCharityAutomatic($charityType) {
+        switch ($charityType) {
+            case $this->charityType->charitySource->code == "FTRH":
+                return $this->charityZakatFitrah;
+            case $this->charityType->charitySource->code == "FDYH":
+                return $this->charityZakatFidyah;
+            case $this->charityType->charitySource->code == "INFQ":
+                return $this->charityInfaq;
+            case $this->charityType->charitySource->code == "SQDH":
+                return $this->charitySodaqoh;
+            case $this->charityType->charitySource->code == "ZMAL":
+                return $this->charityZakatMal;
+            case $this->charityType->charitySource->code == "WQAF":
+                return $this->charityWaqaf;
+            default:
+                return '-';
+        }
     }
 }

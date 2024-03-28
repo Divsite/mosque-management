@@ -339,5 +339,11 @@
         'the_income_type_in_income_type_in_has_been_used' => 'Tipe distribusi {receiverType} pada pemasukan {receiverIncomeType} di tahun {registrationYear} telah dipergunakan',
         'create_expense' => 'Tambah pengeluaran',
         'complaint_has_been_successfully' => 'Aduan berhasil dibuat',
+        'invoice' => 'Invoice',
+        'proof_of_payment' => 'Bukti pembayaran',
+        'if_you_have_any_questions_dont_hesitate_to_contact_the_admin_or_customer_service' => 'Jika ada pertanyaan, jangan ragu untuk menghubungi Admin / Customer Service Pusat.',
+        'update_expense' => 'Ubah pengeluaran',
+        'update_income' => 'Ubah pemasukan',
+        'successfully_added_zakat_fitrah_form' => 'Berhasil menambahkan zakat fitrah (otomatis)',
         ];
 ?>
