@@ -16,6 +16,10 @@ use backend\models\ReceiverExpense;
 use backend\models\ReceiverExpenseDetail;
 use backend\models\ReceiverExpenseHandleCreatedUpdated;
 use backend\models\ReceiverExpenseSearch;
+use backend\models\ReceiverIncome;
+use backend\models\ReceiverIncomeDetail;
+use backend\models\ReceiverIncomeHandleCreatedUpdated;
+use backend\models\ReceiverIncomeSearch;
 use backend\models\ReceiverOfficer;
 use backend\models\ReceiverOperationalType;
 use backend\models\ReceiverResident;
@@ -87,9 +91,19 @@ class ReceiverController extends Controller
         $searchModel = new ReceiverSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
+        $searchModelZakat = new ReceiverSearch();
+        $dataProviderZakat = $searchModelZakat->search(Yii::$app->request->queryParams, ReceiverType::ZAKAT);
+
+        $searchModelSacrifice = new ReceiverSearch();
+        $dataProviderSacrifice = $searchModelSacrifice->search(Yii::$app->request->queryParams, ReceiverType::SACRIFICE);
+
         return $this->render('index', [
             'searchModel' => $searchModel,
+            'searchModelZakat' => $searchModelZakat,
+            'searchModelSacrifice' => $searchModelSacrifice,
             'dataProvider' => $dataProvider,
+            'dataProviderZakat' => $dataProviderZakat,
+            'dataProviderSacrifice' => $dataProviderSacrifice,
         ]);
     }
 
@@ -146,21 +160,12 @@ class ReceiverController extends Controller
 
                 $model->registration_year = $registrationYear;
 
-                $model->village_id = [
-                    'charity' => $villageCharity,
-                    'victim' => null,
-                ];
-                $model->citizens_association_id = [
-                    'charity' => $citizenCharity,
-                    'victim' => null,
-                ];
-                $model->neighborhood_association_id = [
-                    'charity' => $neighborhoodCharity,
-                    'victim' => null,
-                ];
+                $model->village_id = $villageCharity;
+                $model->citizens_association_id = $citizenCharity;
+                $model->neighborhood_association_id = $neighborhoodCharity;
 
                 $model->status = Receiver::PENDING_STATUS;
-                $model->status_update = date('Y-m-d H:i:s');
+                $model->status_update = null;
 
                 $model->save(false);
 
@@ -181,7 +186,6 @@ class ReceiverController extends Controller
                         }
                     }
                 }
-
             }
             
             
@@ -205,18 +209,9 @@ class ReceiverController extends Controller
                     $receiver->status_update = date('Y-m-d H:i:s');
                     $receiver->clock = $model->clock;
                     
-                    $receiver->village_id = [
-                        'charity' => null,
-                        'victim' => $villageVictim,
-                    ];
-                    $receiver->citizens_association_id = [
-                        'charity' => null,
-                        'victim' => $citizenVictim,
-                    ];
-                    $receiver->neighborhood_association_id = [
-                        'charity' => null,
-                        'victim' => $neighborhoodVictim,
-                    ];
+                    $receiver->village_id = $villageVictim;
+                    $receiver->citizens_association_id = $citizenVictim;
+                    $receiver->neighborhood_association_id = $neighborhoodVictim;
                     
                     $receiver->save(false);
                 }
@@ -308,6 +303,9 @@ class ReceiverController extends Controller
         throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
     }
 
+    /* ------------ ------ ------------------ -------- ---------------- ------------------- */
+    /* ------------------------- SACRIFICE FEATURE (QURBAN) ------------------------------- */
+    /* ------------ ------ ------------------ -------- ---------------- ------------------- */
     public function actionScanner()
     {
         $barcodeNumber = Yii::$app->request->get('number');
@@ -426,6 +424,9 @@ class ReceiverController extends Controller
         }
     }
 
+    /* ------------ ------ ------------------ -------- ---------------- ------------------- */
+    /* --------------------------- CHARITY FEATURE (AMAL) ------------------------------- */
+    /* ------------ ------ ------------------ -------- ---------------- ------------------- */
     public function actionSelectReceiverClass($id) : String 
     {
         $receiverClass = ReceiverClass::findOne(['id' => $id]);
@@ -438,6 +439,317 @@ class ReceiverController extends Controller
         return $result;
     }
 
+    public function actionAlmsCouponClaim($id, $status, $receiverId)
+    {
+        $receiver = $this->findModel($receiverId);
+
+        $model = ReceiverResident::findOne($id);
+
+        $receiverDocumentationImage = new ReceiverDocumentationImage();
+        
+        if ($receiverDocumentationImage->load(Yii::$app->request->post()) && $receiverDocumentationImage->validate() ||
+            $model->resident->load(Yii::$app->request->post() && $model->resident->validate()))
+        {
+            $model->status = $status;
+            $model->status_update = date('Y-m-d h:i:s');
+            $model->save(false);
+
+            $this->checkAllDistributionStatus($receiverId, $receiver);
+
+            $this->receiverDocumentationImage($receiver, $receiverDocumentationImage);
+            $this->residentIdentityHomeImage($model);
+
+            Yii::$app->getSession()->setFlash('receiver_resident_status_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'system_information'),
+                'message'  => Yii::t('app', 'zakat_was_successfully_distributed'),
+            ]);
+            return $this->redirect(['view', 'id' => $receiver->id]);
+        }
+        else
+        {
+            if ($receiverDocumentationImage->errors)
+            {
+                $message = "";
+                foreach ($receiverDocumentationImage->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2;
+                    }
+                }
+                Yii::$app->getSession()->setFlash('receiver_resident_status_failed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
+            
+            if ($model->resident->errors)
+            {
+                $message = "";
+                foreach ($model->resident->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2;
+                    }
+                }
+                Yii::$app->getSession()->setFlash('receiver_resident_status_failed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
+        }
+
+        return $this->render('alms-coupon-claim', [
+            'receiverDocumentationImage' => $receiverDocumentationImage,
+            'receiver' => $receiver,
+            'model' => $model,
+        ]);
+    }
+
+    public function actionCreateReceiverComplaint($id, $receiverId)
+    {
+        $receiver = $this->findModel($receiverId);
+        $model = ReceiverResident::findOne($id);
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            Yii::$app->getSession()->setFlash('receiver_complaint_status_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'system_information'),
+                'message'  => Yii::t('app', 'complaint_has_been_successfully'),
+            ]);
+
+            $model->status = ReceiverResident::NOT_SHARED;
+            $model->status_update = date('Y-m-d h:i:s');
+            $model->save();
+
+            $this->checkAllDistributionStatus($receiverId, $receiver);
+
+            return $this->redirect(['view', 'id' => $receiver->id]);
+        } else {
+            if ($model->errors)
+            {
+                $message = "";
+                foreach ($model->errors as $key => $value) {
+                    foreach ($value as $key1 => $value2) {
+                        $message .= $value2 . "<br>";
+                    }
+                }
+                Yii::$app->getSession()->setFlash('complaint_failed', [
+                        'type'     => 'error',
+                        'duration' => 5000,
+                        'title'  => Yii::t('app', 'error'),
+                        'message'  => $message,
+                    ]
+                );
+            }
+        }
+
+        return $this->render('/receiver-resident/create', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionViewReceiverComplaint($id)
+    {
+        $model = ReceiverResident::findOne($id);
+
+        return $this->renderAjax('/receiver-resident/view', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionUpdateOfficerCitizen($id)
+    {
+        $model = $this->findModel($id);
+
+        // get all resident by populate to display on form select
+        $populate = Populate::find()->where([
+            'village_id' => $model->village_id,
+            'citizen_association_id' => $model->citizens_association_id,
+            'neighborhood_association_id' => $model->neighborhood_association_id
+        ])->one();
+
+        $allResidents = User::findResidentsByCode($populate->code);
+
+        $residentDatas = [];
+        foreach ($allResidents as $resident) {
+            $residentDatas[$resident->id] = $resident->name;
+        }
+
+        // get existing resident data to display value already exist on form select
+        $existResidents = [];
+        foreach ($model->receiverResidents as $data) {
+            $residentId = $data->resident_id;
+            
+            $residentUser = User::find()->joinWith('residents')
+                ->where([
+                    'resident.id' => $residentId
+                ])
+                ->one();
+            
+            if ($residentUser) {
+                $existResidents[$residentUser->id] = $residentUser->name;
+            }
+        }
+        $selectedResidents = array_keys($existResidents);
+
+        // get all officer datas
+        $allOfficers = User::find()->where(['level' => Yii::$app->user->identity->level])->all();
+        $officerDatas = [];
+        foreach ($allOfficers as $officer) {
+            $officerDatas[$officer->id] = $officer->name;
+        }
+
+        // get existing officer
+        $existOfficers = [];
+        foreach ($model->receiverOfficers as $data) {
+            $officerId = $data->officer_id;
+            
+            $officerUser = User::find()->joinWith('officers')->where(['officer.id' => $officerId])->one();
+            
+            if ($officerUser) {
+                $existOfficers[$officerUser->id] = $officerUser->name;
+            }
+        }
+        $selectedOfficers = array_keys($existOfficers);
+
+        // update action
+        if (Yii::$app->request->post()) {
+            $residentCharity = Yii::$app->request->post()['receiver-resident_id'];
+            $officerCharity = Yii::$app->request->post()['receiver-officer_id'];
+    
+            $model->unlinkAll('linkedResidents', true);
+            if (!empty($residentCharity)) {
+                foreach ($residentCharity as $residentId) {
+                    $resident = Resident::find()->where(['user_id' => $residentId])->one();
+                    if ($resident !== null) {
+                        $model->link('linkedResidents', $resident);
+                    }
+                }
+            }
+
+            $model->unlinkAll('linkedOfficers', true);
+            if (!empty($officerCharity)) {
+                foreach ($officerCharity as $officerId) {
+                    $officer = Officer::find()->where(['user_id' => $officerId])->one();
+                    if ($officer !== null) {
+                        $model->link('linkedOfficers', $officer);
+                    }
+                }
+            }
+
+            Yii::$app->getSession()->setFlash('update_officer_and_citizen_status_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => Yii::t('app', 'system_information'),
+                'message'  => Yii::t('app', 'update_officer_and_citizen_has_been_successfully'),
+            ]);
+
+            return $this->redirect(['view', 'id' => $model->id]);
+        }
+
+        return $this->render('update-officer-citizen', [
+            'model' => $model,
+            'residentDatas' => $residentDatas,
+            'selectedResidents' => $selectedResidents,
+            'existResidents' => $existResidents,
+            'officerDatas' => $officerDatas,
+            'selectedOfficers' => $selectedOfficers,
+        ]);
+    }
+
+    protected function receiverDocumentationImage($receiver, $receiverDocumentationImage)
+    {
+        $receiverDocumentationImage->url = UploadedFile::getInstances($receiverDocumentationImage, 'url');
+        if ($receiverDocumentationImage->url)
+        {
+            foreach ($receiverDocumentationImage->url as $key => $image) {
+                $docImage = new ReceiverDocumentationImage();
+                $docImage->receiver_id = $receiver->id;
+                
+                $file = Yii::$app->params['upload'] . 'receiver-documentation-image/' . $image->baseName . '.' . $image->extension;
+                $path = Yii::getAlias('@webroot') . $file;
+                $image->saveAs($path);
+
+                $docImage->name = $image->baseName;
+                $docImage->type = $image->type;
+                $docImage->size = $image->size;
+                $docImage->extension = $image->extension;
+                $docImage->description = null;
+                $docImage->url = $file;
+                $docImage->created_by = Yii::$app->user->identity->id;
+                $docImage->updated_by = null;
+                $docImage->created_at = date('Y-m-d H:i:s');
+                $docImage->updated_at = null;
+                $docImage->save(false);
+            }
+        }
+    }
+    
+    protected function residentIdentityHomeImage($model)
+    {
+        $image = UploadedFile::getInstances($model->resident, 'home_image');
+
+        if ($image)
+        {
+            foreach ($image as $uploadFile) {
+                $file = Yii::$app->params['upload'] . 'resident-home-image/' . $uploadFile->baseName . '.' . $uploadFile->extension;
+                $path = Yii::getAlias('@webroot') . $file;
+                $uploadFile->saveAs($path);
+                $model->resident->home_image = $file;
+                $model->resident->save(false);
+            }
+        }
+    }
+
+    public function actionViewReceiverDistribution($id, $residentId)
+    {
+        $model = Receiver::findOne($id);
+        $receiverResident = ReceiverResident::findOne($residentId);
+
+        return $this->renderAjax('/receiver-documentation-image/view', [
+            'model' => $model,
+            'receiverResident' => $receiverResident,
+        ]);
+    }
+
+    protected function checkAllDistributionStatus($receiverId, $receiver)
+    {
+        $allShared = ReceiverResident::find()
+            ->where([
+                'receiver_id' => $receiverId,
+                'status' => [ReceiverResident::SHARED, ReceiverResident::NOT_SHARED]
+            ])
+            ->count();
+
+        $totalResidents = ReceiverResident::find()
+            ->where(['receiver_id' => $receiverId])
+            ->count();
+
+        if ($allShared == $totalResidents) {
+            $pendingResidents = ReceiverResident::find()
+                ->where([
+                    'receiver_id' => $receiverId, 
+                    'status' => ReceiverResident::NOT_YET_SHARED
+                ])
+                ->count();
+
+            if ($pendingResidents == 0) {
+                $receiver->status = Receiver::DONE_STATUS;
+                $receiver->save(false);
+            }
+        }
+    }
+
+    /* ------------ ------ ------------------ -------- ---------------- ------------------- */
+    /* ----------------------- GENERAL FEATURE (AMAL & QURBAN) ---------------------------- */
+    /* ------------ ------ ------------------ -------- ---------------- ------------------- */
     public function actionReport()
     {
         /**
@@ -876,286 +1188,300 @@ class ReceiverController extends Controller
     
     public function actionIncomeIndex()
     {
-        return $this->render('expense');
-    }
+        $searchModel = new ReceiverIncomeSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-    public function actionAlmsCouponClaim($id, $status, $receiverId)
-    {
-        $receiver = $this->findModel($receiverId);
-
-        $model = ReceiverResident::findOne($id);
-
-        $receiverDocumentationImage = new ReceiverDocumentationImage();
-        
-        if ($receiverDocumentationImage->load(Yii::$app->request->post()) && $receiverDocumentationImage->validate() ||
-            $model->resident->load(Yii::$app->request->post() && $model->resident->validate()))
-        {
-            $model->status = $status;
-            $model->status_update = date('Y-m-d h:i:s');
-            $model->save(false);
-
-            $allShared = ReceiverResident::find()->where(['receiver_id' => $receiverId, 'status' => ReceiverResident::SHARED])->count();
-            $totalResidents = ReceiverResident::find()->where(['receiver_id' => $receiverId])->count();
-
-            if ($allShared == $totalResidents) {
-                $pendingResidents = ReceiverResident::find()->where(['receiver_id' => $receiverId, 'status' => ReceiverResident::NOT_YET_SHARED])->count();
-                if ($pendingResidents == 0) {
-                    $receiver->status = Receiver::DONE_STATUS;
-                    $receiver->save(false);
-                }
-            }
-
-            $this->receiverDocumentationImage($receiver, $receiverDocumentationImage);
-            $this->residentIdentityHomeImage($model);
-
-            Yii::$app->getSession()->setFlash('receiver_resident_status_success', [
-                'type'     => 'success',
-                'duration' => 5000,
-                'title'    => Yii::t('app', 'system_information'),
-                'message'  => Yii::t('app', 'zakat_was_successfully_distributed'),
-            ]);
-            return $this->redirect(['view', 'id' => $receiver->id]);
-        }
-        else
-        {
-            if ($receiverDocumentationImage->errors)
-            {
-                $message = "";
-                foreach ($receiverDocumentationImage->errors as $key => $value) {
-                    foreach ($value as $key1 => $value2) {
-                        $message .= $value2;
-                    }
-                }
-                Yii::$app->getSession()->setFlash('receiver_resident_status_failed', [
-                        'type'     => 'error',
-                        'duration' => 5000,
-                        'title'  => Yii::t('app', 'error'),
-                        'message'  => $message,
-                    ]
-                );
-            }
-            
-            if ($model->resident->errors)
-            {
-                $message = "";
-                foreach ($model->resident->errors as $key => $value) {
-                    foreach ($value as $key1 => $value2) {
-                        $message .= $value2;
-                    }
-                }
-                Yii::$app->getSession()->setFlash('receiver_resident_status_failed', [
-                        'type'     => 'error',
-                        'duration' => 5000,
-                        'title'  => Yii::t('app', 'error'),
-                        'message'  => $message,
-                    ]
-                );
-            }
-        }
-
-        return $this->render('alms-coupon-claim', [
-            'receiverDocumentationImage' => $receiverDocumentationImage,
-            'receiver' => $receiver,
-            'model' => $model,
+        return $this->render('/receiver-income/index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
         ]);
     }
 
-    public function actionCreateReceiverComplaint($id, $receiverId)
+    public function actionIncomeCreate()
     {
-        $receiver = $this->findModel($receiverId);
-        $model = ReceiverResident::findOne($id);
+        $model = new ReceiverIncome;
 
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            Yii::$app->getSession()->setFlash('receiver_complaint_status_success', [
-                'type'     => 'success',
-                'duration' => 5000,
-                'title'    => Yii::t('app', 'system_information'),
-                'message'  => Yii::t('app', 'complaint_has_been_successfully'),
-            ]);
+        $detailIncomes = [new ReceiverIncomeDetail];
 
-            $model->status = ReceiverResident::NOT_SHARED;
-            $model->status_update = date('Y-m-d h:i:s');
-            $model->save();
-            return $this->redirect(['view', 'id' => $receiver->id]);
+        if ($model->load(Yii::$app->request->post())) {
+            $model->branch_code = Yii::$app->user->identity->code;
+            $model->registration_year = date('Y');
+            $model->created_at = date('Y-m-d h:i:s');
+            $model->updated_at = date('Y-m-d h:i:s');
+            $model->created_by = Yii::$app->user->identity->id;
+            $model->updated_by = Yii::$app->user->identity->id;
+
+            // receiver expense detail validation
+            $detailIncomes = ReceiverIncomeHandleCreatedUpdated::createMultiple(ReceiverIncomeDetail::classname());
+            
+            foreach ($detailIncomes as $key => $value) {
+                $detailIncomes[$key]->scenario = ReceiverIncomeDetail::SCENARIO_CREATE;
+            }
+
+            ReceiverIncomeHandleCreatedUpdated::loadMultiple($detailIncomes, Yii::$app->request->post());
+
+            // ajax validation case if used ajax
+            if (Yii::$app->request->isAjax) {
+                // json format converting
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ArrayHelper::merge(
+                    ActiveForm::validateMultiple($detailIncomes),
+                    ActiveForm::validate($model)
+                );
+            }
+
+            // multiple validation
+            $valid = $model->validate();
+            $valid = ReceiverIncomeHandleCreatedUpdated::validateMultiple($detailIncomes) && $valid;
+            
+            // multiple store with validation
+            if ($valid) {
+                // yii function for transaction process
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    if ($flag = $model->save(false)) {
+                        foreach ($detailIncomes as $item) {
+                            
+                            $item->receiver_income_id = $model->id;
+
+                            if ($item->money !== null && is_numeric($item->money) &&
+                                $item->rice !== null && is_numeric($item->rice)) {
+                                $model->amount_money += $item->money;
+                                $model->amount_rice += $item->rice;
+                                $model->save(false);
+                            }
+
+                            $item->created_at = date('Y-m-d h:i:s');
+                            $item->updated_at = date('Y-m-d h:i:s');
+                            $item->created_by = Yii::$app->user->identity->id;
+                            $item->updated_by = Yii::$app->user->identity->id;
+
+                            // failed store
+                            if (!($flag = $item->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+
+                    // success store
+                    if ($flag) {
+                        $transaction->commit();
+
+                        Yii::$app->getSession()->setFlash('receiver_income_create_success', [
+                            'type'     => 'success',
+                            'duration' => 5000,
+                            'title'    => Yii::t('app', 'system_information'),
+                            'message'  => Yii::t('app', 'income_has_been_successfully_created'),
+                        ]);
+
+                        return $this->redirect(['income-index']);
+                    }
+                    
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            } else {
+                if ($model->errors)
+                {
+                    $message = "";
+                    foreach ($model->errors as $key => $value) {
+                        foreach ($value as $key1 => $value2) {
+                            $message .= $value2;
+                        }
+                    }
+                    Yii::$app->getSession()->setFlash('receiver_income_status_create_failed', [
+                            'type'     => 'error',
+                            'duration' => 5000,
+                            'title'  => Yii::t('app', 'error'),
+                            'message'  => $message,
+                        ]
+                    );
+                    return $this->redirect(['income-index']);
+                }
+
+                foreach ($detailIncomes as $omg => $detailExpense) {
+                    if ($detailExpense->errors)
+                    {
+                        $message = "";
+                        foreach ($detailExpense->errors as $key => $value) {
+                            foreach ($value as $key1 => $value2) {
+                                $message .= $value2;
+                            }
+                        }
+                        Yii::$app->getSession()->setFlash('receiver_income_detail_status_create_failed', [
+                                'type'     => 'error',
+                                'duration' => 5000,
+                                'title'  => Yii::t('app', 'error'),
+                                'message'  => $message,
+                            ]
+                        );
+                        return $this->redirect(['income-index']);
+                    }
+                }
+            }
         } else {
-            if ($model->errors)
-            {
-                $message = "";
-                foreach ($model->errors as $key => $value) {
-                    foreach ($value as $key1 => $value2) {
-                        $message .= $value2 . "<br>";
-                    }
-                }
-                Yii::$app->getSession()->setFlash('complaint_failed', [
-                        'type'     => 'error',
-                        'duration' => 5000,
-                        'title'  => Yii::t('app', 'error'),
-                        'message'  => $message,
-                    ]
+            return $this->renderAjax('/receiver-income/create', [
+                'model' => $model,
+                'detailIncomes' => (empty($detailIncomes)) ? [new ReceiverIncomeDetail] : $detailIncomes
+            ]);
+        }
+    }
+
+    public function actionIncomeUpdate($id)
+    {
+        $model = $this->findModelIncome($id);
+
+        $model->scenario = ReceiverIncome::SCENARIO_UPDATE;
+
+        $detailIncomes = $model->receiverIncomeDetails;
+
+        foreach ($detailIncomes as $key => $value) {
+            $detailIncomes[$key]->scenario = ReceiverIncomeDetail::SCENARIO_UPDATE;
+        }
+
+        if ($model->load(Yii::$app->request->post())) {
+            $model->branch_code = Yii::$app->user->identity->code;
+            $model->registration_year = date('Y');
+            $model->updated_at = date('Y-m-d h:i:s');
+            $model->updated_by = Yii::$app->user->identity->id;
+
+            // receiver expense detail validation
+            $oldIDs = ArrayHelper::map($detailIncomes, 'id', 'id');
+            $detailIncomes = ReceiverExpenseHandleCreatedUpdated::createMultiple(ReceiverIncomeDetail::classname(), $detailIncomes);
+            ReceiverExpenseHandleCreatedUpdated::loadMultiple($detailIncomes, Yii::$app->request->post());
+            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($detailIncomes, 'id', 'id')));
+
+            // ajax validation case if used ajax
+            if (Yii::$app->request->isAjax) {
+                // json format converting
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ArrayHelper::merge(
+                    ActiveForm::validateMultiple($detailIncomes),
+                    ActiveForm::validate($model)
                 );
             }
-        }
 
-        return $this->render('/receiver-resident/create', [
-            'model' => $model,
-        ]);
-    }
-
-    public function actionViewReceiverComplaint($id)
-    {
-        $model = ReceiverResident::findOne($id);
-
-        return $this->renderAjax('/receiver-resident/view', [
-            'model' => $model,
-        ]);
-    }
-
-    public function actionUpdateOfficerCitizen($id)
-    {
-        $model = $this->findModel($id);
-
-        // get all resident by populate to display on form select
-        $populate = Populate::find()->where([
-            'village_id' => $model->village_id,
-            'citizen_association_id' => $model->citizens_association_id,
-            'neighborhood_association_id' => $model->neighborhood_association_id
-        ])->one();
-
-        $allResidents = User::findResidentsByCode($populate->code);
-        $residentDatas = [];
-        foreach ($allResidents as $resident) {
-            $residentDatas[$resident->id] = $resident->name;
-        }
-
-        // get existing resident data to display value already exist on form select
-        $existResidents = [];
-        foreach ($model->receiverResidents as $data) {
-            $residentId = $data->resident_id;
+            // multiple validation
+            $valid = $model->validate();
+            $valid = ReceiverExpenseHandleCreatedUpdated::validateMultiple($detailIncomes) && $valid;
             
-            $residentUser = User::find()->joinWith('residents')->where(['resident.id' => $residentId])->one();
-            
-            if ($residentUser) {
-                $existResidents[$residentUser->id] = $residentUser->name;
-            }
-        }
-        $selectedResidents = array_keys($existResidents);
+            // multiple store with validation
+            if ($valid) {
+                // yii function for transaction process
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    if ($flag = $model->save(false)) {
+                        $totalAmountRice = 0;
+                        $totalAmountMoney = 0;
+                        foreach ($detailIncomes as $index => $item) {
+                            
+                            $item->receiver_income_id = $model->id;
 
-        // get all officer datas
-        $allOfficers = User::find()->where(['level' => Yii::$app->user->identity->level])->all();
-        $officerDatas = [];
-        foreach ($allOfficers as $officer) {
-            $officerDatas[$officer->id] = $officer->name;
-        }
+                            if ($item->money !== null && $item->rice !== null) {
+                                $totalAmountRice += $item->rice;
+                                $totalAmountMoney += $item->money;
+                                $model->amount_rice = $totalAmountRice;
+                                $model->amount_money = $totalAmountMoney;
+                                $model->save(false);
+                            }
 
-        // get existing officer
-        $existOfficers = [];
-        foreach ($model->receiverOfficers as $data) {
-            $officerId = $data->officer_id;
-            
-            $officerUser = User::find()->joinWith('officers')->where(['officer.id' => $officerId])->one();
-            
-            if ($officerUser) {
-                $existOfficers[$officerUser->id] = $officerUser->name;
-            }
-        }
-        $selectedOfficers = array_keys($existOfficers);
+                            $item->updated_at = date('Y-m-d h:i:s');
+                            $item->updated_by = Yii::$app->user->identity->id;
 
-        // update action
-        if (Yii::$app->request->post()) {
-            $residentCharity = Yii::$app->request->post()['receiver-resident_id'];
-            $officerCharity = Yii::$app->request->post()['receiver-officer_id'];
-    
-            $model->unlinkAll('linkedResidents', true);
-            if (!empty($residentCharity)) {
-                foreach ($residentCharity as $residentId) {
-                    $resident = Resident::find()->where(['user_id' => $residentId])->one();
-                    if ($resident !== null) {
-                        $model->link('linkedResidents', $resident);
+                            if (! empty($deletedIDs)) {
+                                ReceiverIncomeDetail::deleteAll(['id' => $deletedIDs]);
+                            }
+
+                            // failed store
+                            if (!($flag = $item->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+
+                            $model->refresh();
+                        }
+                    }
+
+                    // success store
+                    if ($flag) {
+                        $transaction->commit();
+
+                        Yii::$app->getSession()->setFlash('receiver_income_update_success', [
+                            'type'     => 'success',
+                            'duration' => 5000,
+                            'title'    => Yii::t('app', 'system_information'),
+                            'message'  => Yii::t('app', 'income_has_been_successfully_updated'),
+                        ]);
+
+                        return $this->redirect(['income-index']);
+                    }
+                    
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            } 
+            else {
+                if ($model->errors)
+                {
+                    
+                    $message = "";
+                    foreach ($model->errors as $key => $value) {
+                        foreach ($value as $key1 => $value2) {
+                            $message .= $value2;
+                        }
+                    }
+                    Yii::$app->getSession()->setFlash('receiver_income_status_update_failed', [
+                            'type'     => 'error',
+                            'duration' => 5000,
+                            'title'  => Yii::t('app', 'error'),
+                            'message'  => $message,
+                        ]
+                    );
+                    return $this->redirect(['income-index']);
+                }
+
+                foreach ($detailIncomes as $omg => $detailIncome) {
+                    if ($detailIncome->errors)
+                    {
+                        $message = "";
+                        foreach ($detailIncome->errors as $key => $value) {
+                            foreach ($value as $key1 => $value2) {
+                                $message .= $value2;
+                            }
+                        }
+                        Yii::$app->getSession()->setFlash('receiver_income_detail_status_update_failed', [
+                                'type'     => 'error',
+                                'duration' => 5000,
+                                'title'  => Yii::t('app', 'error'),
+                                'message'  => $message,
+                            ]
+                        );
+                        return $this->redirect(['income-index']);
                     }
                 }
             }
-
-            $model->unlinkAll('linkedOfficers', true);
-            if (!empty($officerCharity)) {
-                foreach ($officerCharity as $officerId) {
-                    $officer = Officer::find()->where(['user_id' => $officerId])->one();
-                    if ($officer !== null) {
-                        $model->link('linkedOfficers', $officer);
-                    }
-                }
-            }
-
-            Yii::$app->getSession()->setFlash('update_officer_and_citizen_status_success', [
-                'type'     => 'success',
-                'duration' => 5000,
-                'title'    => Yii::t('app', 'system_information'),
-                'message'  => Yii::t('app', 'update_officer_and_citizen_has_been_successfully'),
+        } else {
+            return $this->renderAjax('/receiver-income/update', [
+                'model' => $model,
+                'detailIncomes' => (empty($detailIncomes)) ? [new ReceiverIncomeDetail] : $detailIncomes
             ]);
-
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
-
-        return $this->render('update-officer-citizen', [
-            'model' => $model,
-            'residentDatas' => $residentDatas,
-            'selectedResidents' => $selectedResidents,
-            'officerDatas' => $officerDatas,
-            'selectedOfficers' => $selectedOfficers,
-        ]);
-    }
-
-    protected function receiverDocumentationImage($receiver, $receiverDocumentationImage)
-    {
-        $receiverDocumentationImage->url = UploadedFile::getInstances($receiverDocumentationImage, 'url');
-        if ($receiverDocumentationImage->url)
-        {
-            foreach ($receiverDocumentationImage->url as $key => $image) {
-                $docImage = new ReceiverDocumentationImage();
-                $docImage->receiver_id = $receiver->id;
-                
-                $file = Yii::$app->params['upload'] . 'receiver-documentation-image/' . $image->baseName . '.' . $image->extension;
-                $path = Yii::getAlias('@webroot') . $file;
-                $image->saveAs($path);
-
-                $docImage->name = $image->baseName;
-                $docImage->type = $image->type;
-                $docImage->size = $image->size;
-                $docImage->extension = $image->extension;
-                $docImage->description = null;
-                $docImage->url = $file;
-                $docImage->created_by = Yii::$app->user->identity->id;
-                $docImage->updated_by = null;
-                $docImage->created_at = date('Y-m-d H:i:s');
-                $docImage->updated_at = null;
-                $docImage->save(false);
-            }
-        }
-    }
-    
-    protected function residentIdentityHomeImage($model)
-    {
-        $image = UploadedFile::getInstances($model->resident, 'home_image');
-
-        if ($image)
-        {
-            foreach ($image as $uploadFile) {
-                $file = Yii::$app->params['upload'] . 'resident-home-image/' . $uploadFile->baseName . '.' . $uploadFile->extension;
-                $path = Yii::getAlias('@webroot') . $file;
-                $uploadFile->saveAs($path);
-                $model->resident->home_image = $file;
-                $model->resident->save(false);
-            }
         }
     }
 
-    public function actionViewReceiverDistribution($id, $residentId)
+    public function actionIncomeDelete($id)
     {
-        $model = Receiver::findOne($id);
-        $receiverResident = ReceiverResident::findOne($residentId);
+        $this->findModelIncome($id)->delete();
 
-        return $this->renderAjax('/receiver-documentation-image/view', [
-            'model' => $model,
-            'receiverResident' => $receiverResident,
-        ]);
+        return $this->redirect(['income-index']);
+    }
+
+    protected function findModelIncome($id)
+    {
+        if (($model = ReceiverIncome::findOne($id)) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
     }
 }

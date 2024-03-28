@@ -23,6 +23,8 @@ use Yii;
  */
 class ReceiverIncomeDetail extends \yii\db\ActiveRecord
 {
+    const SCENARIO_CREATE = 'create';
+    const SCENARIO_UPDATE = 'update';
     /**
      * {@inheritdoc}
      */
@@ -37,9 +39,8 @@ class ReceiverIncomeDetail extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['receiver_income_id', 'receiver_income_type_id', 'created_by', 'updated_by'], 'integer'],
-            [['money', 'amount_money', 'amount_rice'], 'number'],
-            [['rice'], 'string'],
+            [['receiver_income_id', 'created_by', 'updated_by'], 'integer'],
+            [['money', 'rice'], 'number'],
             [['created_at', 'updated_at', 'timestamp'], 'safe'],
             [['name'], 'string', 'max' => 255],
         ];
@@ -52,18 +53,28 @@ class ReceiverIncomeDetail extends \yii\db\ActiveRecord
     {
         return [
             'id' => Yii::t('app', 'ID'),
-            'receiver_income_id' => Yii::t('app', 'Receiver Income ID'),
-            'receiver_income_type_id' => Yii::t('app', 'Receiver Income Type ID'),
-            'name' => Yii::t('app', 'Name'),
-            'money' => Yii::t('app', 'Money'),
-            'rice' => Yii::t('app', 'Rice'),
-            'amount_money' => Yii::t('app', 'Amount Money'),
-            'amount_rice' => Yii::t('app', 'Amount Rice'),
+            'receiver_income_id' => Yii::t('app', 'receiver_income_id'),
+            'name' => Yii::t('app', 'name'),
+            'money' => Yii::t('app', 'get_money'),
+            'rice' => Yii::t('app', 'rice'),
             'created_at' => Yii::t('app', 'Created At'),
             'updated_at' => Yii::t('app', 'Updated At'),
             'created_by' => Yii::t('app', 'Created By'),
             'updated_by' => Yii::t('app', 'Updated By'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
+    }
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_CREATE] = $this->attributes();
+        $scenarios[self::SCENARIO_UPDATE] = $this->attributes();
+        return $scenarios;
+    }
+
+    public function getReceiverExpense()
+    {
+        return $this->hasOne(ReceiverIncome::class, ['id' => 'receiver_income_id']);
     }
 }

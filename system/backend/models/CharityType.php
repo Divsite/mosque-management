@@ -23,7 +23,7 @@ class CharityType extends \yii\db\ActiveRecord
 
     const SCENARIO_CREATE = 'create';
     const SCENARIO_UPDATE = 'update';
-
+    
     /**
      * {@inheritdoc}
      */
@@ -38,7 +38,7 @@ class CharityType extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['desc', 'charity_type_source_id'], 'required'],
+            [['charity_type_source_id'], 'required'],
             [['min', 'max', 'total_rice', 'package'], 'number'],
             [['charity_type_source_id', 'is_rice', 'is_active'], 'integer'],
             ['charity_type_source_id', 'validateUniqueCharityTypeSource', 'on' => 'create'],
@@ -93,13 +93,5 @@ class CharityType extends \yii\db\ActiveRecord
                 'charityTypeSourceName' => $charityTypeSourceName
             ]));
         }
-    }
-
-    public function scenarios()
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_CREATE] = ['charity_type_source_id'];
-        $scenarios[self::SCENARIO_UPDATE] = $this->attributes();
-        return $scenarios;
     }
 }

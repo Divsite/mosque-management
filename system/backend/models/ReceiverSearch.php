@@ -19,7 +19,7 @@ class ReceiverSearch extends Receiver
     {
         return [
             [['id', 'receiver_type_id', 'receiver_class_id', 'village_id', 'citizens_association_id', 'neighborhood_association_id', 'status'], 'integer'],
-            [['desc', 'registration_year', 'barcode_number', 'timestamp'], 'safe'],
+            [['desc', 'registration_year', 'barcode_number', 'timestamp', 'status_update', 'clock'], 'safe'],
         ];
     }
 
@@ -39,19 +39,18 @@ class ReceiverSearch extends Receiver
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search($params, $receiverType = null)
     {
-        if (Yii::$app->user->identity->level == '26095f283a02924562378b7d7c28162e'
-            || Yii::$app->user->identity->level == '7968a93c1b259584d917d009a7a6923a') 
-        { // superadmin
-            $query = Receiver::find()
-                    ->with('receiverType')
-                    ->where(['branch_code' => Yii::$app->user->identity->code]);
-        } else {
-            $query = Receiver::find()
-                    ->with('receiverType')
-                    ->where(['branch_code' => Yii::$app->user->identity->code])
-                    ->andWhere(['user_id' => Yii::$app->user->identity->id]);
+        $query = Receiver::find()
+                ->with('receiverType')
+                ->where(['branch_code' => Yii::$app->user->identity->code]);
+
+        if ($receiverType !== null) {
+            $query->andWhere(['receiver_type_id' => $receiverType]);
+        }
+
+        if (!Yii::$app->user->identity->isSuperadmin()) {
+            $query->andWhere(['user_id' => Yii::$app->user->identity->id]);
         }
 
         // add conditions that should always apply here
@@ -83,6 +82,8 @@ class ReceiverSearch extends Receiver
             'neighborhood_association_id' => $this->neighborhood_association_id,
             'registration_year' => $this->registration_year,
             'status' => $this->status,
+            'status_update' => $this->status_update,
+            'clock' => $this->clock,
             'timestamp' => $this->timestamp,
         ]);
 

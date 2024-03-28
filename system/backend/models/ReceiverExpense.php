@@ -104,4 +104,12 @@ class ReceiverExpense extends \yii\db\ActiveRecord
     {
         return $this->hasMany(ReceiverExpenseDetail::className(), ['receiver_expense_id' => 'id']);
     }
+
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_CREATE] = $this->attributes();
+        $scenarios[self::SCENARIO_UPDATE] = $this->attributes();
+        return $scenarios;
+    }
 }

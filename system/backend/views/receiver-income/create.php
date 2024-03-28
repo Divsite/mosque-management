@@ -10,11 +10,8 @@ $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Receiver Incomes'), 
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="receiver-income-create">
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
     <?= $this->render('_form', [
         'model' => $model,
+        'detailIncomes' => $detailIncomes
     ]) ?>
-
 </div>

@@ -77,7 +77,7 @@ class Receiver extends \yii\db\ActiveRecord
             'registration_year' => Yii::t('app', 'registration_year'),
             'barcode_number' => Yii::t('app', 'barcode_number'),
             'status' => Yii::t('app', 'status'),
-            'status_update' => Yii::t('app', 'status_update'),
+            'status_update' => Yii::t('app', 'claim_date'),
             'clock' => Yii::t('app', 'clock'),
             'user_id' => Yii::t('app', 'user_id'),
             'branch_code' => Yii::t('app', 'branch_code'),

@@ -145,8 +145,8 @@ class ReceiverClassController extends Controller
     {
         $model = $this->findModel($id);
 
-        $model->scenario = ReceiverClass::SCENARIO_UPDATE;
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $model->scenario = ReceiverClass::SCENARIO_UPDATE;
             $model->branch_code = Yii::$app->user->identity->code;
             $model->registration_year = date('Y');
             $model->save(false);
