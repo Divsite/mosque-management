@@ -41,12 +41,10 @@ class ReceiverExpenseSearch extends ReceiverExpense
      */
     public function search($params)
     {
-        if (Yii::$app->user->identity->level == '26095f283a02924562378b7d7c28162e'
-            || Yii::$app->user->identity->level == '7968a93c1b259584d917d009a7a6923a') 
+        if (Yii::$app->user->identity->type == UserType::DIVSITE) 
         { // superadmin
             $query = ReceiverExpense::find()
-                    ->with('operationalType')
-                    ->where(['branch_code' => Yii::$app->user->identity->code]);
+                    ->with('operationalType');
         } else {
             $query = ReceiverExpense::find()
                     ->with('operationalType')

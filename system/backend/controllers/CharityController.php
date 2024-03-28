@@ -2,6 +2,8 @@
 
 namespace backend\controllers;
 
+use backend\models\Branch;
+use backend\models\BranchCategory;
 use Yii;
 use backend\models\Charity;
 use backend\models\CharityInfaq;
@@ -14,10 +16,12 @@ use backend\models\CharityZakatFidyah;
 use backend\models\CharityZakatFitrah;
 use backend\models\CharityZakatFitrahPackage;
 use backend\models\CharityZakatMal;
+use kartik\mpdf\Pdf;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\helpers\Url;
 
 /**
  * CharityController implements the CRUD actions for Charity model.
@@ -139,7 +143,7 @@ class CharityController extends Controller
                                 'type'     => 'success',
                                 'duration' => 5000,
                                 'title'    => Yii::t('app', 'system_information'),
-                                'message'  => 'successfully_added_form_manual',
+                                'message'  => Yii::t('app', 'successfully_added_form_manual'),
                             ]
                         );
                     } else {
@@ -173,8 +177,9 @@ class CharityController extends Controller
 
                     if ($charityZakatFitrah->load(Yii::$app->request->post()) && $charityZakatFitrah->validate()) {
                         $charityZakatFitrah->charity_id = $model->id;
+                        $charityZakatFitrah->charity_zakat_fitrah_package_id = Yii::$app->request->post('zakat_fitrah_package');
                         // echo "<pre>";
-                        // var_dump($charityZakatFitrah);
+                        // var_dump(Yii::$app->request->post('zakat_fitrah_package'));
                         // die;
                         $charityZakatFitrah->payment_date = date('Y-m-d h:i:s');
                         $charityZakatFitrah->save();
@@ -426,51 +431,116 @@ class CharityController extends Controller
 
     public function actionPrintInvoice($id)
     {
-        $model = TbInvoice::findOne($id);
+        $model = $this->findModel($id);
 
-        $allServices = TbInvoiceService::find()
-                    ->where(['id_tb_invoice' => $model->id])
-                    ->orderBy(['qty' => SORT_DESC])
-                    ->all();
+        if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+            $charity = $model->charityManually;
+        } else {
+            $charity = $model->findCharityAutomatic($model->type_charity_id);
+        }
 
-        $sum = TbInvoiceService::find()->where(['id_tb_invoice' => $model->id])->sum('amount');
+        // header resources
+        $branch = Branch::find()
+                ->where([
+                    'bch_category_id' => BranchCategory::MOSQUE,
+                    'code' => Yii::$app->user->identity->code
+                ])
+                ->one();
 
-        $content = $this->renderPartial('/tb-invoice/print/invoice', [
-                'model' => $model,
-                'allServices' => $allServices,
-                'sum' => $sum,
-                ]);
+        $branchImage = $branch && $branch['bch_image'] && is_file(Yii::getAlias('@webroot') . $branch['bch_image']) ? 
+                        Url::base() . $branch['bch_image'] : 
+                        Url::base() . '/dist/img/nexcity_logo_elipse.png';
+
+        $branchName = $branch ? $branch->bch_name : Yii::t('app', 'nexcity');
+        $branchAddress = $branch ? $branch->bch_address : null;
+        $branchTelp = $branch ? $branch->bch_telp : null;
+
+        $content = $this->renderPartial('print/invoice', [
+            'model' => $model,
+            'charity' => $charity,
+            'branchImage' => $branchImage,
+            'branchName' => $branchName,
+            'branchAddress' => $branchAddress,
+            'branchTelp' => $branchTelp,
+        ]);
         
         $cssInline = <<< CSS
-        .table1 {
-            font-family: sans-serif;
-            /* font-weight:normal; */
-            color: #232323;
-            border-collapse: collapse;
-            width: 100%;
-            border: 1px solid #000000;
-            font-weight: bold;
-        }
-        .table1, th, td {
-            border: 1px solid #000000;
-            padding: 3px 2px;
-        }
-        .table1 tr:hover {
-            background-color: #f5f5f5;
-        }
+            .invoice-container {
+                margin: 0 auto;
+                padding: 5px;
+                border: 1px solid #000;
+                font-family: Arial, sans-serif;
+            }
+
+            .header {
+                margin-bottom: 3px;
+                text-align: center;
+            }
+
+            .logo {
+                width: 80px;
+                height: 80px;
+                float: left;
+            }
+
+            .branch-info {
+                float: left
+            }
+
+            .content {
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+
+            .title {
+                text-align: center;
+                font-weight: bold;
+                font-size: 12px;
+                padding: 0;
+                margin: 0;
+            }
+
+            .info {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .info td {
+                padding: 5px 10px;
+                border-bottom: 1px solid #000;
+                border-style: dotted
+            }
+
+            .customer-address {
+                border-bottom: 1px solid #000;
+                border-style: dotted;
+                padding-bottom: 10px;
+                padding-top: 10px;
+            }
+
+            .contact-info {
+                font-style: italic;
+            }
+
+            .footer {
+                margin-bottom: 3px;
+                margin-top: 3px;
+                text-align: center;
+            }
         CSS;
+
         $pdf = new Pdf([
             'mode' => Pdf::MODE_UTF8,
             'marginLeft' => 5,
             'marginRight' => 5,
             'marginTop' => 4,
-            'format' => [210,297],
+            'format' => [100,297],
             'orientation' => Pdf::ORIENT_PORTRAIT,
             'destination' => Pdf::DEST_BROWSER,
             'content' => $content,
             'cssInline' => $cssInline,
             'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
-            'options' => ['title' => 'Invoice Order'],
+            'options' => ['title' => Yii::t('app', 'invoice')],
             'methods' => [
                 'SetHeader'=> [null],
                 'SetFooter'=> [null]
@@ -478,7 +548,12 @@ class CharityController extends Controller
         ]);
 
         $date = date('d-m-Y His');
-        $pdf->filename = "Invoice - ".$date.".pdf";
+
+        $pdf->filename = Yii::t('app', 'invoice') . ' - '  . 
+                        $charity->customer_name . ' - ' . 
+                        $model->charityType->charitySource->name . " - " .
+                        $date.".pdf";
+
         return $pdf->render();
     }
 }

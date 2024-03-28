@@ -52,60 +52,6 @@ $this->params['breadcrumbs'][] = $this->title;
                         ],
 
                         [
-                            'format' => 'raw',
-                            'label' => Yii::t('app', 'customer_name'),
-                            'value' => function ($model) {
-                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
-                                    return $model->charityManually ? $model->charityManually->customer_name : null;
-                                } else {
-                                    switch ($model->type_charity_id) {
-                                        case $model->charityType->charitySource->code == "FTRH":
-                                            return $model->charityZakatFitrah ? $model->charityZakatFitrah->customer_name : null;
-                                        case $model->charityType->charitySource->code == "FDYH":
-                                            return $model->charityZakatFidyah ? $model->charityZakatFidyah->customer_name : null;
-                                        case $model->charityType->charitySource->code == "INFQ":
-                                            return $model->charityInfaq ? $model->charityInfaq->customer_name : null;
-                                        case $model->charityType->charitySource->code == "SQDH":
-                                            return $model->charitySodaqoh ? $model->charitySodaqoh->customer_name : null;
-                                        case $model->charityType->charitySource->code == "ZMAL":
-                                            return $model->charityZakatMal ? $model->charityZakatMal->customer_name : null;
-                                        case $model->charityType->charitySource->code == "WQAF":
-                                            return $model->charityWaqaf ? $model->charityWaqaf->customer_name : null;
-                                        default:
-                                            return '-';
-                                    }
-                                }
-                            },
-                        ],
-                        
-                        [
-                            'format' => 'raw',
-                            'label' => Yii::t('app', 'customer_number'),
-                            'value' => function ($model) {
-                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
-                                    return $model->charityManually ? $model->charityManually->customer_number : null;
-                                } else {
-                                    switch ($model->type_charity_id) {
-                                        case $model->charityType->charitySource->code == "FTRH":
-                                            return $model->charityZakatFitrah ? $model->charityZakatFitrah->customer_number : null;
-                                        case $model->charityType->charitySource->code == "FDYH":
-                                            return $model->charityZakatFidyah ? $model->charityZakatFidyah->customer_number : null;
-                                        case $model->charityType->charitySource->code == "INFQ":
-                                            return $model->charityInfaq ? $model->charityInfaq->customer_number : null;
-                                        case $model->charityType->charitySource->code == "SQDH":
-                                            return $model->charitySodaqoh ? $model->charitySodaqoh->customer_number : null;
-                                        case $model->charityType->charitySource->code == "ZMAL":
-                                            return $model->charityZakatMal ? $model->charityZakatMal->customer_number : null;
-                                        case $model->charityType->charitySource->code == "WQAF":
-                                            return $model->charityWaqaf ? $model->charityWaqaf->customer_number : null;
-                                        default:
-                                            return '-';
-                                    }
-                                }
-                            },
-                        ],
-
-                        [
                             'attribute' => 'year',
                             'filter' => DatePicker::widget([
                                 'model' => $searchModel,
@@ -124,7 +70,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             'format' => 'raw',
                             'attribute' => 'type',
                             'value' => function ($model) {
-                                return $model->type == 1 ? Yii::t('app', 'charity_type_manually') : Yii::t('app', 'charity_type_automatic');
+                                return $model->type == Charity::CHARITY_TYPE_MANUALLY ? Yii::t('app', 'charity_type_manually') : Yii::t('app', 'charity_type_automatic');
                             },
                             'filter'=>[
                                 1 => Yii::t('app', 'charity_type_manually'),
@@ -144,15 +90,76 @@ $this->params['breadcrumbs'][] = $this->title;
                         ],
 
                         [
+                            'format' => 'raw',
+                            'attribute' => 'customer_name',
+                            'label' => Yii::t('app', 'name'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually ? $model->charityManually->customer_name : null;
+                                } else {
+                                    $customer = $model->findCharityAutomatic($model->type_charity_id);
+                                    return $customer->customer_name ?? null;
+                                }
+                            },
+                        ],
+                        
+                        [
+                            'format' => 'raw',
+                            'label' => Yii::t('app', 'telp'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually ? $model->charityManually->customer_number : null;
+                                } else {
+                                    $customer = $model->findCharityAutomatic($model->type_charity_id);
+                                    return $customer->customer_number ?? null;
+                                }
+                            },
+                        ],
+                        
+                        [
+                            'format' => 'raw',
+                            'label' => Yii::t('app', 'payment_total'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually ? Yii::$app->formatter->asCurrency($model->charityManually->payment_total, 'IDR') : null;
+                                } else {
+                                    $customer = $model->findCharityAutomatic($model->type_charity_id);
+                                    return Yii::$app->formatter->asCurrency($customer->payment_total, 'IDR') ?? null;
+                                }
+                            },
+                        ],
+                        
+                        [
+                            'format' => 'raw',
+                            'attribute' => 'payment_date',
+                            'label' => Yii::t('app', 'payment_date'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually ? $model->charityManually->payment_date : null;
+                                } else {
+                                    $customer = $model->findCharityAutomatic($model->type_charity_id);
+                                    return $customer->payment_date ?? null;
+                                }
+                            },
+                        ],
+                        
+                        [
+                            'format' => 'raw',
+                            'label' => Yii::t('app', 'total_rice'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually ? $model->charityManually->total_rice . ' Liter' : null;
+                                } else {
+                                    return '-';
+                                }
+                            },
+                        ],
+
+                        [
                             'class' => 'yii\grid\ActionColumn',
                             'header' => 'Action',
-                            'template' => '{view} {update} {delete} {print-invoice}',
+                            'template' => '{print-invoice} {delete}',
                             'buttons' => [
-                            'view' => function($url, $model) {
-                                return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-search"></i></button>', 
-                                    ['view', 'id' => $model['id']], 
-                                    ['title' => 'View']);
-                            },
                             'update' => function($url, $model) {
                                 return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-edit"></i></button>', 
                                     ['update', 'id' => $model['id']], 

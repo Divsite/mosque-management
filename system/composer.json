@@ -28,7 +28,8 @@
         "kartik-v/yii2-widget-datetimepicker": "@dev",
         "kartik-v/yii2-money": "dev-master",
         "kidzen/yii2-dynamicform": "*",
-        "kartik-v/yii2-widget-activeform": "dev-master"
+        "kartik-v/yii2-widget-activeform": "dev-master",
+        "kartik-v/yii2-mpdf": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",

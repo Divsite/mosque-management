@@ -25,7 +25,7 @@ use yii\helpers\Url;
             'branch_code' => Yii::$app->user->identity->code,
             'is_active' => CharityZakatFitrahPackage::ACTIVE,
         ])->all(), 'id', 'name'),
-        'value' => $charityZakatFitrah->charity_zakat_fitrah_package_id,
+        // 'value' => $charityZakatFitrah->charity_zakat_fitrah_package_id,
         'options' => [
             'placeholder' => Yii::t('app', 'select_package'),
             'onChange' => '$.post("' . Url::base() . '/charity/package-calculation?id=" + $(this).val() + "&type_charity_id=" + $("#type_charity_id").val(), function(data) {
