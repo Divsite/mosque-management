@@ -50,7 +50,7 @@ class CharitySearch extends Charity
         } else {
             $query = Charity::find()
                     ->with('charityType', 'charityManually', 'charityZakatFitrah', 'charityZakatFidyah', 'charityInfaq', 'charitySodaqoh', 'charityZakatMal', 'charityWaqaf')
-                    ->where(['branch_code' => Yii::$app->user->identity->code]);
+                    ->where(['branch_code' => $user->code]);
         }
 
         // add conditions that should always apply here

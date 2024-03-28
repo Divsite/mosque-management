@@ -13,6 +13,7 @@ use yii\bootstrap4\Modal;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = Yii::t('app', 'expenses');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'receivers'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="receiver-expense">

@@ -97,12 +97,4 @@ class ReceiverClass extends \yii\db\ActiveRecord
             ]));
         }
     }
-
-    public function scenarios()
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_CREATE] = ['receiver_class_source_id'];
-        $scenarios[self::SCENARIO_UPDATE] = $this->attributes();
-        return $scenarios;
-    }
 }

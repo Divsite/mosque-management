@@ -44,7 +44,14 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                 
                 <p>
                     <?= Html::a(Yii::t('app', 'create_receiver'), ['create'], ['class' => 'btn btn-success']) ?>
-                    <?= Html::a('<button class="btn btn-primary"><i class="fa fa-users"></i></button>', ['update-officer-citizen', 'id' => $model->id], ['class' => '']) ?>
+                    <?php if (Yii::$app->user->identity->can('update-officer-citizen')) : ?>
+                        <?php if ($model->receiver_type_id == ReceiverType::ZAKAT) : ?>
+                            <?= Html::a('<button class="btn btn-primary"><i class="fa fa-users"></i></button>', 
+                                ['update-officer-citizen', 'id' => $model->id],
+                                ['style' => $model->status == Receiver::DONE_STATUS ? 'pointer-events: none; opacity: 0.6;' : '',])
+                            ?>
+                        <?php endif ?>
+                    <?php endif ?>
                 </p>
 
                 <?php if ($model->receiver_type_id == ReceiverType::ZAKAT) : ?>
@@ -145,7 +152,7 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                                                             $buttonClass = $paidStatus == Yii::t('app', 'is_paid_yes') ? 'btn-success' : 'btn-danger';
                                                         ?>
                                                         <td>
-                                                            <?= Html::button(Html::tag('i', $paidStatus, ['class' => $iconClass]), ['class' => 'btn ' . $buttonClass]) ?>
+                                                        <?= Html::button(Html::tag('i', '', ['class' => $iconClass]) . ' ' . $paidStatus, ['class' => 'btn ' . $buttonClass]) ?>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach ?>

@@ -17,7 +17,7 @@ class ReceiverIncomeSearch extends ReceiverIncome
     public function rules()
     {
         return [
-            [['id', 'receiver_income_type_id', 'created_by', 'updated_by'], 'integer'],
+            [['id', 'receiver_income_type_id', 'receiver_type_id', 'created_by', 'updated_by'], 'integer'],
             [['branch_code', 'registration_year', 'description', 'created_at', 'updated_at', 'timestamp'], 'safe'],
             [['amount_money', 'amount_rice'], 'number'],
         ];
@@ -60,6 +60,7 @@ class ReceiverIncomeSearch extends ReceiverIncome
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
+            'receiver_type_id' => $this->receiver_type_id,
             'receiver_income_type_id' => $this->receiver_income_type_id,
             'registration_year' => $this->registration_year,
             'amount_money' => $this->amount_money,

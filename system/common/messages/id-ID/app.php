@@ -3,8 +3,8 @@
  * Indonesian Languange Translations
  * 
  * */ 
-    return [
-        'ID' => 'id',
+        return [
+        'ID' => 'No',
         'receivers' => 'Distribusi',
         'create_receiver' => 'Tambah distribusi',
         'receiver_type_id' => 'Tipe distribusi',
@@ -246,7 +246,7 @@
         'not_yet_update' => 'Belum ada pembaruan',
         'has_been_distributed' => 'Sudah di distribusikan',
         'status_distribution' => 'Status distribusi',
-        'status_update' => 'Status pembaruan',
+        'claim_date' => 'Tanggal klaim',
         'distributed' => 'Distribusikan',
         'are_you_sure_want_to_share_this_zakat_?' => 'Apa kamu yakin ingin bagikan zakat ini?',
         'not_distributed' => 'Tidak di distribusikan',
@@ -320,5 +320,24 @@
         'charity_report_daily_manually' => 'Laporan amal perhari (manual)',
         'distribution_has_been_over' => 'Distribusi telah selesai',
         'distribution_in_progress' => 'Distribusi dalam proses',
-    ];
+        'successfully_added_form_manual' => 'Berhasil menambahkan form manual',
+        'all_distribution_data' => 'Semua data distribusi',
+        'are_you_sure_want_to_claim_this_coupon_?' => 'Apa kamu yakin ingin klaim kupon ini?',
+        'are_you_sure_want_to_delete_this_item_?' => 'Apa kamu yakin ingin hapus item ini?',
+        'amount_rice' => 'Total uang',
+        'amount_money' => 'Total beras',
+        'receiver_income_type_id' => 'Jenis pemasukan',
+        'select_income_type' => 'Pilih jenis pemasukan',
+        'detail_income' => 'Rincian pemasukan',
+        'create_income' => 'Tambah pemasukan',
+        'income_has_been_successfully_created' => 'Pemasukan berhasil ditambah!',
+        'income_has_been_successfully_updated' => 'Pemasukan berhasil diubah!',
+        'receiver_income_status_update_failed' => 'Pemasukan gagal diubah!',
+        'receiver_income_detail_status_update_failed' => 'Detail pemasukan gagal diubah!',
+        'receiver_income_status_create_failed' => 'Pemasukan gagal ditambah!',
+        'receiver_income_detail_status_create_failed' => 'Detail pemasukan gagal ditambah!',
+        'the_income_type_in_income_type_in_has_been_used' => 'Tipe distribusi {receiverType} pada pemasukan {receiverIncomeType} di tahun {registrationYear} telah dipergunakan',
+        'create_expense' => 'Tambah pengeluaran',
+        'complaint_has_been_successfully' => 'Aduan berhasil dibuat',
+        ];
 ?>

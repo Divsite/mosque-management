@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="row">
                 
                 <?php if (Yii::$app->user->identity->can('create')) : ?>
-                    <?= Html::a(Yii::t('app', 'create_charity'), ['create'], ['class' => 'btn btn-success']) ?>
+                    <?= Html::a(Yii::t('app', 'create_charity'), ['create'], ['class' => 'btn btn-success btn-margin']) ?>
                 <?php endif ?>
 
             </div>

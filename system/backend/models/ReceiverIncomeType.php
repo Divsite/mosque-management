@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "receiver_income_type".
@@ -45,5 +46,12 @@ class ReceiverIncomeType extends \yii\db\ActiveRecord
             'name' => Yii::t('app', 'Name'),
             'timestamp' => Yii::t('app', 'Timestamp'),
         ];
+    }
+
+    public static function getListReceiverIncomeType()
+    {
+        return ArrayHelper::map(
+            static::find()->all(), 'id', 'name'
+        );
     }
 }

@@ -94,7 +94,10 @@ class User extends \yii\db\ActiveRecord
     public static function findResidentsByCode($code)
     {
         return static::find()
-            ->where(['code' => $code])
+            ->where([
+                'code' => $code,
+                'type' => UserType::RESIDENT
+            ])
             ->all();
     }
 }

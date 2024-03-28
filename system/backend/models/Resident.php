@@ -56,6 +56,7 @@ class Resident extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+            [['home_image'], 'required'],
             [['nik', 'gender_id', 'education_id', 'education_major_id', 'married_status_id', 'nationality_id', 'religion_id', 'residence_status_id', 'citizen_association_id', 'neighborhood_association_id', 'family_head_status', 'dependent_number', 'village_id'], 'integer'],
             [['birth_date', 'registration_date'], 'safe'],
             [['address'], 'string'],

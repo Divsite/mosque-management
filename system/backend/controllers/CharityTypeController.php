@@ -145,8 +145,8 @@ class CharityTypeController extends Controller
     {
         $model = $this->findModel($id);
 
-        $model->scenario = CharityType::SCENARIO_UPDATE;
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $model->scenario = CharityType::SCENARIO_UPDATE;
             $model->branch_code = Yii::$app->user->identity->code;
             $model->registration_year = date('Y');
             $model->save(false);
