@@ -105,19 +105,6 @@ $this->params['breadcrumbs'][] = $this->title;
                         
                         [
                             'format' => 'raw',
-                            'label' => Yii::t('app', 'telp'),
-                            'value' => function ($model) {
-                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
-                                    return $model->charityManually ? $model->charityManually->customer_number : null;
-                                } else {
-                                    $customer = $model->findCharityAutomatic($model->type_charity_id);
-                                    return $customer->customer_number ?? null;
-                                }
-                            },
-                        ],
-                        
-                        [
-                            'format' => 'raw',
                             'label' => Yii::t('app', 'payment_total'),
                             'value' => function ($model) {
                                 if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
@@ -148,7 +135,9 @@ $this->params['breadcrumbs'][] = $this->title;
                             'label' => Yii::t('app', 'total_rice'),
                             'value' => function ($model) {
                                 if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
-                                    return $model->charityManually ? $model->charityManually->total_rice . ' Liter' : null;
+                                    return $model->charityManually &&
+                                    $model->charityManually->total_rice ? 
+                                    $model->charityManually->total_rice . ' Liter' : '-';
                                 } else {
                                     return '-';
                                 }

@@ -324,8 +324,8 @@
         'all_distribution_data' => 'Semua data distribusi',
         'are_you_sure_want_to_claim_this_coupon_?' => 'Apa kamu yakin ingin klaim kupon ini?',
         'are_you_sure_want_to_delete_this_item_?' => 'Apa kamu yakin ingin hapus item ini?',
-        'amount_rice' => 'Total uang',
-        'amount_money' => 'Total beras',
+        'amount_rice' => 'Total beras',
+        'amount_money' => 'Total uang',
         'receiver_income_type_id' => 'Jenis pemasukan',
         'select_income_type' => 'Pilih jenis pemasukan',
         'detail_income' => 'Rincian pemasukan',
@@ -345,5 +345,6 @@
         'update_expense' => 'Ubah pengeluaran',
         'update_income' => 'Ubah pemasukan',
         'successfully_added_zakat_fitrah_form' => 'Berhasil menambahkan zakat fitrah (otomatis)',
+        'total_muzakki' => 'Total muzakki',
         ];
 ?>
