@@ -448,8 +448,8 @@ class CharityController extends Controller
                 ->one();
 
         $branchImage = $branch && $branch['bch_image'] && is_file(Yii::getAlias('@webroot') . $branch['bch_image']) ? 
-                        Url::base() . $branch['bch_image'] : 
-                        Url::base() . '/dist/img/nexcity_logo_elipse.png';
+                Url::to(Yii::getAlias('@web') . $branch['bch_image'], true) : 
+                Url::to('/dist/img/nexcity_logo_elipse.png', true);
 
         $branchName = $branch ? $branch->bch_name : Yii::t('app', 'nexcity');
         $branchAddress = $branch ? $branch->bch_address : null;
