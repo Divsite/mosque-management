@@ -65,25 +65,35 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                 <div class="table-responsive table-nowrap">
                     <table class="table table-bordered table-nowrap">
                         <tbody>
-                            <?php
-                                $incomeTotal = 0;
+                            <?php 
+                            $summary = [];
+                            $incomeTotal = 0;
+
+                            foreach ($summaryCharityManually->getModels() as $model) {
+                                $typeId = $model->charityType->id;
+                                $typeName = $model->charityType->charitySource->name;
+                                $paymentTotal = $model->charityManually->payment_total;
+
+                                if (!isset($summary[$typeId])) {
+                                    $summary[$typeId] = [
+                                        'name' => $typeName,
+                                        'total' => 0,
+                                    ];
+                                }
+
+                                $summary[$typeId]['total'] += $paymentTotal;
+                                $incomeTotal += $paymentTotal;
+                            } 
                             ?>
-                            <?php foreach ($summaryCharityManually->getModels() as $model): ?>
-                            <?php
-                                $incomeTotal += $model->charityManually->payment_total;
-                            ?>
+                            <?php foreach ($summary as $item): ?>
                             <tr>
-                                <td><strong><?= $model->charityType->charitySource->name ?></strong></td>
-                                <td>
-                                    <?= Yii::$app->formatter->asCurrency($model->charityManually->payment_total, 'IDR') ?>
-                                </td>
+                                <td><strong><?= $item['name'] ?></strong></td>
+                                <td><?= Yii::$app->formatter->asCurrency($item['total'], 'IDR') ?></td>
                             </tr>
                             <?php endforeach; ?>
                             <tr>
                                 <td><strong><?= Yii::t('app', 'total_income') ?></strong></td>
-                                <td>
-                                    <?= Yii::$app->formatter->asCurrency($incomeTotal, 'IDR') ?>
-                                </td>
+                                <td><?= Yii::$app->formatter->asCurrency($incomeTotal, 'IDR') ?></td>
                             </tr>
                         </tbody>
                     </table>
@@ -192,17 +202,20 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                         </thead>
                         <tbody>
                             <?php
-                                $summaryCharityDailyManuallyTotal = 0;
+                                $summaryCharityDailyManuallyTotalMoney = 0;
+                                $summaryCharityDailyManuallyTotalRice = 0;
+                                $totalMuzakki = count($summaryCharityDailyManually->getModels());
                             ?>
                             <?php foreach ($summaryCharityDailyManually->getModels() as $index => $model): ?>
                             <?php
-                                $summaryCharityDailyManuallyTotal += $model->charityManually->payment_total;
+                                $summaryCharityDailyManuallyTotalMoney += $model->charityManually->payment_total;
+                                $summaryCharityDailyManuallyTotalRice += $model->charityManually->total_rice;
                             ?>
                             <tr>
                                 <td><?= $index++ ?></td>
                                 <td><?= $model->charityManually->customer_name ?></td>
                                 <td><?= $model->charityManually->customer_number ?></td>
-                                <td><?= $model->charityManually ? $model->charityManually->total_rice . ' LITER' : '-' ?></td>
+                                <td><?= $model->charityManually && $model->charityManually->total_rice ? $model->charityManually->total_rice . ' LITER' : '-' ?></td>
                                 <td><?= $model->charityManually->payment_total ? Yii::$app->formatter->asCurrency($model->charityManually->payment_total, 'IDR') : '-' ?></td>
                             </tr>
                             <?php endforeach; ?>
@@ -210,11 +223,17 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                         <tr>
                             <td></td>
                             <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <?= Yii::t('app', 'total') ?> :
-                                <?= Yii::$app->formatter->asCurrency($summaryCharityDailyManuallyTotal, 'IDR') ?>
+                            <td style="font-weight: bold;">
+                                <?= Yii::t('app', 'amount_rice') ?> :
+                                <?= $summaryCharityDailyManuallyTotalRice ?>
+                            </td>
+                            <td style="font-weight: bold;">
+                                <?= Yii::t('app', 'total_muzakki') ?> :
+                                <?= $totalMuzakki ?>
+                            </td>
+                            <td style="font-weight: bold;">
+                                <?= Yii::t('app', 'amount_money') ?> :
+                                <?= Yii::$app->formatter->asCurrency($summaryCharityDailyManuallyTotalMoney, 'IDR') ?>
                             </td>
                         </tr>
                     </table>

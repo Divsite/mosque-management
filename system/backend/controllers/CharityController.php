@@ -331,8 +331,8 @@ class CharityController extends Controller
             ->where([
                 'branch_code' => Yii::$app->user->identity->code,
                 'type' => Charity::CHARITY_TYPE_MANUALLY,
-            ])
-            ->groupBy('type_charity_id');
+            ]);
+            // ->groupBy('type_charity_id');
         
         $charityAutomatic = Charity::find()
             ->with([
@@ -355,6 +355,10 @@ class CharityController extends Controller
             $charityManually->andWhere(['year' => Yii::$app->request->post('registration_year')]);
             $charityAutomatic->andWhere(['year' => Yii::$app->request->post('registration_year')]);
         }
+
+        // echo "<pre>";
+        // var_dump($charityManually);
+        // die;
 
         $summaryCharityType = new ActiveDataProvider([
             'query' => $charityType,
@@ -396,6 +400,7 @@ class CharityController extends Controller
             'summaryCharityType' => $summaryCharityType,
             'summaryCharityManually' => $summaryCharityManually,
             'summaryCharityAutomatic' => $summaryCharityAutomatic,
+            'summaryCharityDailyManually' => $summaryCharityDailyManually,
             'summaryCharityDailyManually' => $summaryCharityDailyManually,
         ]);
     }
