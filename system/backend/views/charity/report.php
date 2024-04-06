@@ -177,7 +177,7 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
         <div class="row">
             <div class="col-md-12">
                 <?= Html::a('<i class="fa fa-print"></i>' .  Yii::t('app', 'export_as_excel'), ['charity/export-as-excel-to-charity-daily-manually'], ['class' => 'btn btn-success']) ?>
-                <?= Html::a(Yii::t('app', 'export_as_pdf'), ['charity/export-pdf'], ['class' => 'btn btn-danger']) ?>
+                <?php // Html::a(Yii::t('app', 'export_as_pdf'), ['charity/export-pdf'], ['class' => 'btn btn-danger']) ?>
                 <div class="d-flex justify-content-between">
                     <h6 style="margin-top: auto;">
                         <?= Yii::t('app', 'charity_report_daily_manually') ?>
