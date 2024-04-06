@@ -69,7 +69,7 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                             $summary = [];
                             $incomeTotal = 0;
 
-                            foreach ($summaryCharityManually->getModels() as $model) {
+                            foreach ($summaryCharityManually as $model) {
                                 $typeId = $model->charityType->id;
                                 $typeName = $model->charityType->charitySource->name;
                                 $paymentTotal = $model->charityManually->payment_total;
@@ -204,9 +204,9 @@ $this->registerJsFile('@web/dist/js/dataTables.bootstrap4.min.js', ['depends' =>
                             <?php
                                 $summaryCharityDailyManuallyTotalMoney = 0;
                                 $summaryCharityDailyManuallyTotalRice = 0;
-                                $totalMuzakki = count($summaryCharityDailyManually->getModels());
+                                $totalMuzakki = count($summaryCharityDailyManually);
                             ?>
-                            <?php foreach ($summaryCharityDailyManually->getModels() as $index => $model): ?>
+                            <?php foreach ($summaryCharityDailyManually as $index => $model): ?>
                             <?php
                                 $summaryCharityDailyManuallyTotalMoney += $model->charityManually->payment_total;
                                 $summaryCharityDailyManuallyTotalRice += $model->charityManually->total_rice;
