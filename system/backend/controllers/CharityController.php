@@ -319,6 +319,7 @@ class CharityController extends Controller
 
     public function actionReport()
     {
+        // list all type charity
         $charityType = CharityType::find()
             ->with('charitySource')
             ->where([
@@ -326,14 +327,15 @@ class CharityController extends Controller
                 'is_active' => CharityType::ACTIVE,
             ]);
 
+        // list all charityManually
         $charityManually = Charity::find()
             ->with(['charityType', 'charityManually'])
             ->where([
                 'branch_code' => Yii::$app->user->identity->code,
                 'type' => Charity::CHARITY_TYPE_MANUALLY,
             ]);
-            // ->groupBy('type_charity_id');
-        
+
+        // charity automatic 
         $charityAutomatic = Charity::find()
             ->with([
                 'charityType', 
@@ -350,28 +352,24 @@ class CharityController extends Controller
             ])
             ->groupBy('type_charity_id');
 
+        // post request year
         if (Yii::$app->request->post('registration_year')) {
             $charityType->andWhere(['registration_year' => Yii::$app->request->post('registration_year')]);
             $charityManually->andWhere(['year' => Yii::$app->request->post('registration_year')]);
             $charityAutomatic->andWhere(['year' => Yii::$app->request->post('registration_year')]);
         }
 
-        // echo "<pre>";
-        // var_dump($charityManually);
-        // die;
-
         $summaryCharityType = new ActiveDataProvider([
             'query' => $charityType,
         ]);
         
-        $summaryCharityManually = new ActiveDataProvider([
-            'query' => $charityManually
-        ]);
+        $summaryCharityManually = $charityManually->all();
         
         $summaryCharityAutomatic = new ActiveDataProvider([
             'query' => $charityAutomatic
         ]);
 
+        // get charity manually per daily
         $charityDailyManually = Charity::find()
             ->joinWith('charityManually')
             ->where([
@@ -380,27 +378,19 @@ class CharityController extends Controller
             ]);
 
         $paymentDate = Yii::$app->request->post('payment_date');
-
         if (Yii::$app->request->post('type_charity_id') && $paymentDate) {
             $charityDailyManually->andWhere([
                 'type_charity_id' => Yii::$app->request->post('type_charity_id'),
                 'charity_manually.payment_date' => Yii::$app->request->post('payment_date')
             ]);
         }
-
-        // echo "<pre>";
-        // var_dump($charityDailyManually);
-        // die;
         
-        $summaryCharityDailyManually = new ActiveDataProvider([
-            'query' => $charityDailyManually,
-        ]);
+        $summaryCharityDailyManually = $charityDailyManually->all();
 
         return $this->render('report', [
             'summaryCharityType' => $summaryCharityType,
             'summaryCharityManually' => $summaryCharityManually,
             'summaryCharityAutomatic' => $summaryCharityAutomatic,
-            'summaryCharityDailyManually' => $summaryCharityDailyManually,
             'summaryCharityDailyManually' => $summaryCharityDailyManually,
         ]);
     }
