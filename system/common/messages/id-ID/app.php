@@ -346,5 +346,7 @@
         'update_income' => 'Ubah pemasukan',
         'successfully_added_zakat_fitrah_form' => 'Berhasil menambahkan zakat fitrah (otomatis)',
         'total_muzakki' => 'Total muzakki',
+        'export_as_excel' => 'Download excel',
+        'export_as_pdf' => 'Download pdf',
         ];
 ?>

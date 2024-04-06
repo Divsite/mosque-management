@@ -59,6 +59,11 @@ class Charity extends \yii\db\ActiveRecord
         ];
     }
 
+    public static function find()
+    {
+        return new CharityQuery(get_called_class());
+    }
+
     public function beforeDelete()
     {
         if (parent::beforeDelete()) {
@@ -145,5 +150,20 @@ class Charity extends \yii\db\ActiveRecord
             default:
                 return '-';
         }
+    }
+
+    public function getUserBranch()
+    {
+        return ['branch_code' => Yii::$app->user->identity->code];
+    }
+
+    public function getTypeManually()
+    {
+        return ['type' => self::CHARITY_TYPE_MANUALLY];
+    }
+
+    public function getTypeAutomatic()
+    {
+        return ['type' => self::CHARITY_TYPE_AUTOMATIC];
     }
 }
