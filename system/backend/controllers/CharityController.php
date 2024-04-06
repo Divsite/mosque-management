@@ -22,6 +22,8 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\helpers\Url;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 /**
  * CharityController implements the CRUD actions for Charity model.
@@ -371,17 +373,21 @@ class CharityController extends Controller
 
         // get charity manually per daily
         $charityDailyManually = Charity::find()
-            ->joinWith('charityManually')
-            ->where([
-                'branch_code' => Yii::$app->user->identity->code,
-                'type' => Charity::CHARITY_TYPE_MANUALLY,
-            ]);
+                                ->joinWith('charityManually')
+                                ->scopeByUserBranch()
+                                ->scopeByTypeManually();
 
         $paymentDate = Yii::$app->request->post('payment_date');
-        if (Yii::$app->request->post('type_charity_id') && $paymentDate) {
+        $charityTypeReq = Yii::$app->request->post('type_charity_id');
+
+        // set save to session
+        Yii::$app->session->set('payment_date_request', $paymentDate);
+        Yii::$app->session->set('charity_type_request', $charityTypeReq);
+        
+        if ($charityTypeReq && $paymentDate) {
             $charityDailyManually->andWhere([
-                'type_charity_id' => Yii::$app->request->post('type_charity_id'),
-                'charity_manually.payment_date' => Yii::$app->request->post('payment_date')
+                'type_charity_id' => $charityTypeReq,
+                'charity_manually.payment_date' => $paymentDate
             ]);
         }
         
@@ -550,5 +556,84 @@ class CharityController extends Controller
                         $date.".pdf";
 
         return $pdf->render();
+    }
+
+    public function actionExportAsExcelToCharityDailyManually()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $sheet->setCellValue('A1', 'NO');
+        $sheet->setCellValue('B1', 'customer_name');
+        $sheet->setCellValue('C1', 'customer_number');
+        $sheet->setCellValue('D1', 'total_rice');
+        $sheet->setCellValue('E1', 'payment_total');
+
+        $charityDailyManually = Charity::find()
+                                ->joinWith('charityManually')
+                                ->scopeByUserBranch()
+                                ->scopeByTypeManually();
+
+        $getPaymentDate = Yii::$app->session->get('payment_date_request');
+        $getCharityType = Yii::$app->session->get('charity_type_request');
+        
+        if ($getCharityType && $getPaymentDate) {
+            $charityDailyManually->andWhere([
+                'type_charity_id' => $getCharityType,
+                'charity_manually.payment_date' => $getPaymentDate
+            ]);
+        }
+        
+        $summaryCharityDailyManually = $charityDailyManually->all();
+
+        $summaryCharityDailyManuallyTotalMoney = 0;
+        $summaryCharityDailyManuallyTotalRice = 0;
+        $totalMuzakki = count($summaryCharityDailyManually);
+
+        $row = 2;
+        foreach ($summaryCharityDailyManually as $index => $model) {
+            $summaryCharityDailyManuallyTotalMoney += $model->charityManually->payment_total;
+            $summaryCharityDailyManuallyTotalRice += $model->charityManually->total_rice;
+
+            $sheet->setCellValue('A' . $row, $index + 1);
+            $sheet->setCellValue('B' . $row, $model->charityManually->customer_name);
+            $sheet->setCellValue('C' . $row, $model->charityManually->customer_number);
+            $sheet->setCellValue('D' . $row, ($model->charityManually && $model->charityManually->total_rice) ? $model->charityManually->total_rice . ' LITER' : '-');
+            $sheet->setCellValue('E' . $row, $model->charityManually->payment_total ? Yii::$app->formatter->asCurrency($model->charityManually->payment_total, 'IDR') : '-');
+            $row++;
+        }
+
+        $sheet->setCellValue('A' . $row, '');
+        $sheet->setCellValue('B' . $row, '');
+        $sheet->setCellValue('C' . $row, Yii::t('app', 'amount_rice') . ' :');
+        $sheet->setCellValue('D' . $row, $summaryCharityDailyManuallyTotalRice);
+        $sheet->setCellValue('E' . $row, '');
+
+        $row++;
+        $sheet->setCellValue('A' . $row, '');
+        $sheet->setCellValue('B' . $row, '');
+        $sheet->setCellValue('C' . $row, Yii::t('app', 'total_muzakki') . ' :');
+        $sheet->setCellValue('D' . $row, $totalMuzakki);
+        $sheet->setCellValue('E' . $row, '');
+
+        $row++;
+        $sheet->setCellValue('A' . $row, '');
+        $sheet->setCellValue('B' . $row, '');
+        $sheet->setCellValue('C' . $row, Yii::t('app', 'amount_money') . ' :');
+        $sheet->setCellValue('D' . $row, Yii::$app->formatter->asCurrency($summaryCharityDailyManuallyTotalMoney, 'IDR'));
+        $sheet->setCellValue('E' . $row, '');
+
+        $filename = ($getPaymentDate && $getCharityType) ? 
+                'Laporan Amal - ' . $getPaymentDate . ' untuk ' . $getCharityType . 'Di ekspor pada tanggal ' . date('Y-m-d') . '.xlsx' : 
+                'Laporan Amal Keseluruhan - Di ekspor pada tanggal ' . date('Y-m-d') .  '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filename);
+
+        // Download file
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        $writer->save('php://output');
+        exit;
     }
 }
