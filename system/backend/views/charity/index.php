@@ -6,6 +6,7 @@ use kartik\date\DatePicker;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
+use kartik\export\ExportMenu;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\CharitySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -40,10 +41,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
             <div class="table-responsive table-nowrap">
 
-                <?= GridView::widget([
-                    'dataProvider' => $dataProvider,
-                    'filterModel' => $searchModel,
-                    'columns' => [
+                <?php 
+                    $gridColumns = [
                         [
                             'class' => 'yii\grid\SerialColumn',
                             'header' => 'No',
@@ -93,6 +92,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             'format' => 'raw',
                             'attribute' => 'customer_name',
                             'label' => Yii::t('app', 'name'),
+                            'contentOptions' => ['style' => 'white-space: normal;'],
                             'value' => function ($model) {
                                 if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
                                     return $model->charityManually ? $model->charityManually->customer_name : null;
@@ -114,6 +114,21 @@ $this->params['breadcrumbs'][] = $this->title;
                                     return Yii::$app->formatter->asCurrency($customer->payment_total, 'IDR') ?? null;
                                 }
                             },
+                            'footer' => Charity::getPaymentTotal($dataProvider->models, 'payment_total'),                         
+                        ],
+
+                        [
+                            'format' => 'raw',
+                            'label' => Yii::t('app', 'total_rice'),
+                            'value' => function ($model) {
+                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
+                                    return $model->charityManually &&
+                                    $model->charityManually->total_rice ? 
+                                    $model->charityManually->total_rice . ' Liter' : '-';
+                                } else {
+                                    return '-';
+                                }
+                            },
                         ],
                         
                         [
@@ -126,20 +141,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                 } else {
                                     $customer = $model->findCharityAutomatic($model->type_charity_id);
                                     return $customer->payment_date ?? null;
-                                }
-                            },
-                        ],
-                        
-                        [
-                            'format' => 'raw',
-                            'label' => Yii::t('app', 'total_rice'),
-                            'value' => function ($model) {
-                                if ($model->type == Charity::CHARITY_TYPE_MANUALLY) {
-                                    return $model->charityManually &&
-                                    $model->charityManually->total_rice ? 
-                                    $model->charityManually->total_rice . ' Liter' : '-';
-                                } else {
-                                    return '-';
                                 }
                             },
                         ],
@@ -170,8 +171,37 @@ $this->params['breadcrumbs'][] = $this->title;
                                 }
                             ]
                         ],
-                    ],
-                ]); ?>
+                    ];
+                    echo ExportMenu::widget([
+                        'dataProvider' => $dataProvider,
+                        'columns' => $gridColumns,
+                        'filename' => 'charity',
+                        'batchSize' => 1024,
+                        'showFooter' => true,
+                        'exportConfig' => [
+                            ExportMenu::FORMAT_PDF => false,
+                            ExportMenu::FORMAT_EXCEL => false,
+                        ],
+                    ]);
+                ?>
+
+                <?= GridView::widget([
+                    'dataProvider' => $dataProvider,
+                    'filterModel' => $searchModel,
+                    'columns' => $gridColumns,
+                    'showFooter' => true,
+                ]);
+                ?>
+
+                <?php 
+                // GridView::widget([
+                //     'dataProvider' => $dataProvider,
+                //     'filterModel' => $searchModel,
+                //     'columns' => [
+                        
+                //     ],
+                // ]); 
+                ?>
 
             </div>
 

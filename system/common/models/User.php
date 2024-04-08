@@ -2,6 +2,7 @@
 namespace common\models;
 
 use backend\models\UserAccess;
+use backend\models\UserType;
 use Yii;
 use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
@@ -257,7 +258,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function isSuperadmin() // superadmin/root
     {
-        return $this->level == '8fd335d939dcad62b59c1b682cababbe';
+        return $this->type == UserType::DIVSITE;
     }
 
 }
