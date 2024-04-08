@@ -166,4 +166,14 @@ class Charity extends \yii\db\ActiveRecord
     {
         return ['type' => self::CHARITY_TYPE_AUTOMATIC];
     }
+
+    public static function getPaymentTotal($dataProvider, $attribute)
+    {
+        $total = 0;
+        foreach ($dataProvider as $model) {
+            $total += $model->charityManually ? $model->charityManually->{$attribute} : null;
+        }
+        return Yii::$app->formatter->asCurrency($total, 'IDR');
+    }
+
 }
