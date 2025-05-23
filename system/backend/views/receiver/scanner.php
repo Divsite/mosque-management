@@ -95,14 +95,16 @@ $("#enter").click(function() {
                         title: "Success!",
                         text: response.message,
                         icon: "success",
-                        timer: 5000,
+                        timer: 3000,
                     });
 
                     if (isAndroid()) {
                         Android.showNotification(1, response.message, input); // android notification
                     }
 
-                    $('#input').val(''); // reset
+                    setTimeout(() => {
+                        $('#input').val('');
+                    }, 500);
                 } else { // error validation
                     swal.fire({
                         title: "Error!",
