@@ -40,7 +40,7 @@
         'only_android_device_running' => 'Hanya bisa dijalankan diperangkat android',
         'coupon' => 'Kupon',
         'data_updated' => 'Berhasil di ubah',
-        'failed_number_coupon' => 'Nomor kupon salah!',
+        'failed_number_coupon' => 'Nomor kupon tidak valid!',
         'data_found' => 'Berhasil ditemukan',
         'data_not_found' => 'Data tidak ditemukan',
         'please_see_number_provided_on_the_blank_form_or_other_documents' => 'Silahkan melihat nomor yang tersedia pada Blangko Formulir atau Dokumen yang lainnya',
@@ -348,5 +348,7 @@
         'total_muzakki' => 'Total muzakki',
         'export_as_excel' => 'Download excel',
         'export_as_pdf' => 'Download pdf',
+        'server_error_occured' => 'Kesalahan internal server',
+        'success_claimed' => 'Berhasil di klaim'
         ];
 ?>

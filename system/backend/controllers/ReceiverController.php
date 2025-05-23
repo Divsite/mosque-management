@@ -30,6 +30,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use yii\web\Response;
 use yii\web\UploadedFile;
 
 /**
@@ -308,54 +309,38 @@ class ReceiverController extends Controller
     /* ------------ ------ ------------------ -------- ---------------- ------------------- */
     public function actionScanner()
     {
+        return $this->render('scanner');
+    }
+
+    public function actionClaim()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
         $barcodeNumber = Yii::$app->request->get('number');
+
+        if (!$barcodeNumber) {
+            return ['success' => false, 'message' => Yii::t('app', 'invalid_number')];
+        }
 
         $receiver = Receiver::find()->where(['barcode_number' => $barcodeNumber])->one();
 
-        if ($barcodeNumber !== null && isset($barcodeNumber)) {
-
-            if ($receiver !== null) {
-
-                if ($receiver->status == Receiver::CLAIM) {
-                    Yii::$app->getSession()->setFlash('receiver_status_claimed', [
-                        'type'     => 'error',
-                        'duration' => 5000,
-                        'title'    => Yii::t('app', 'error'),
-                        'message'  => Yii::t('app', 'sorry_the_coupon_has_already_been_used'),
-                    ]);
-                    return $this->redirect(['scanner']);
-                }
-
-                // claim coupon update status
-                $receiver->user_id = Yii::$app->user->identity->id;
-                $receiver->status = Receiver::CLAIM;
-                $receiver->status_update = date('Y-m-d H:i:s');
-                $receiver->save(false);
-
-                // show data
-                $receiverData = array(
-                    'data' => array (
-                        'id'  => $receiver['id'],
-                        'barcode_number'  => $receiver['barcode_number'],
-                        'name'  => $receiver['name'] ? $receiver['name'] : null,
-                        'desc'  => $receiver['desc'] ? $receiver['desc'] : null,
-                        'registration_year'  => $receiver['registration_year'] ? $receiver['registration_year'] : null,
-                        'status' => $receiver['status'] ? $receiver->getStatus() : null,
-                        'status_update' => $receiver['status_update'],
-                        'receiver_type_id' => $receiver->receiverType ? $receiver->receiverType->name : null,
-                        'receiver_class_id' => $receiver->receiverClass ? $receiver->receiverClass->name : null,
-                        'user_id' => $receiver->user ? $receiver->user->name : null,
-                        'branch_code' => $receiver->branch ? $receiver->branch->bch_name : null,
-                        'citizens_association_id' => $receiver->citizens ? $receiver->citizens->name : null,
-                        'neighborhood_association_id' => $receiver->neighborhood ? $receiver->neighborhood->name : null,
-                    ),
-                );
-            }
+        if (!$receiver) {
+            return ['success' => false, 'message' => Yii::t('app', 'data_not_found')];
         }
 
-        return $this->render('scanner', [
-            'receiver' => $receiver ? $receiverData : null,
-        ]);
+        if ($receiver->status == Receiver::CLAIM) {
+            return ['success' => false, 'message' => Yii::t('app', 'sorry_the_coupon_has_already_been_used')];
+        }
+
+        $receiver->user_id = Yii::$app->user->identity->id;
+        $receiver->status = Receiver::CLAIM;
+        $receiver->status_update = date('Y-m-d H:i:s');
+        $receiver->save(false);
+
+        return [
+            'success' => true,
+            'message' => Yii::t('app', 'coupon') . ' ' . $barcodeNumber . ' ' . Yii::t('app', 'data_found') . ' dan ' . Yii::t('app', 'success_claimed')
+        ];
     }
 
     public function actionPrintReceiverBarcode() {
