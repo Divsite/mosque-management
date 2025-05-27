@@ -1527,4 +1527,44 @@ class ReceiverController extends Controller
 
         throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
     }
+
+    public function actionRefreshStatistics()
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        $receivers = Receiver::find()->all();
+        $details = [];
+
+        foreach ($receivers as $coupon) {
+
+            $key = ($coupon->is_committee == 1) ? 'Panitia' : $coupon->neighborhood->name;
+
+            if (!isset($details[$key])) {
+                $details[$key] = [
+                    'claimed' => 0,
+                    'not_claimed' => 0,
+                    'total' => 0,
+                ];
+            }
+
+            if ($coupon->status == Receiver::CLAIM) {
+                $details[$key]['claimed']++;
+            } elseif ($coupon->status == Receiver::NOT_CLAIM) {
+                $details[$key]['not_claimed']++;
+            }
+
+            $details[$key]['total']++;
+        }
+
+        $statistics = [
+            Yii::t('app', 'all_total_qurban_coupon') => array_sum(array_column($details, 'total')),
+            Yii::t('app', 'total_claim_qurban_coupon') => array_sum(array_column($details, 'claimed')),
+            Yii::t('app', 'total_not_claim_qurban_coupon') => array_sum(array_column($details, 'not_claimed')),
+        ];
+
+        return [
+            'statistics' => $statistics,
+            'details' => $details,
+        ];
+    }
 }

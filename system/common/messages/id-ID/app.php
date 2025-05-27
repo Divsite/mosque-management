@@ -351,6 +351,7 @@
         'server_error_occured' => 'Kesalahan internal server',
         'success_claimed' => 'Berhasil di klaim',
         'receiver_is_committee' => 'Penerima adalah Panitia/Relawan',
-        'committee' => 'Panitia'
+        'committee' => 'Panitia',
+        'last_updated' => 'Pembaruan terakhir'
         ];
 ?>
