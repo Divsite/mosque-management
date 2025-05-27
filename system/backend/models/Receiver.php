@@ -58,6 +58,7 @@ class Receiver extends \yii\db\ActiveRecord
             [['branch_code'], 'string', 'max' => 50],
             ['status_update', 'datetime', 'format' => 'php:Y-m-d H:i:s'],
             ['clock', 'time', 'format' => 'php:H:i', 'message' => 'Invalid time format.'],
+            ['is_committee', 'integer'],
         ];
     }
 

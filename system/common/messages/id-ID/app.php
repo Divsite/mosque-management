@@ -349,6 +349,8 @@
         'export_as_excel' => 'Download excel',
         'export_as_pdf' => 'Download pdf',
         'server_error_occured' => 'Kesalahan internal server',
-        'success_claimed' => 'Berhasil di klaim'
+        'success_claimed' => 'Berhasil di klaim',
+        'receiver_is_committee' => 'Penerima adalah Panitia/Relawan',
+        'committee' => 'Panitia'
         ];
 ?>

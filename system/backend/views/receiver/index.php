@@ -9,6 +9,7 @@ use yii\grid\GridView;
 use yii\helpers\ArrayHelper;
 use backend\models\ReceiverType;
 use backend\models\Village;
+use common\components\Helpers;
 use kartik\date\DatePicker;
 
 /* @var $this yii\web\View */
@@ -56,6 +57,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         <?php if (Yii::$app->user->identity->can('expense-index')) : ?>
                             <?= Html::a('<i class="fa fa-money-bill-alt"></i> ' . Yii::t('app', 'expenses'), ['expense-index'], ['class' => 'btn btn-secondary btn-margin']) ?>
                         <?php endif ?>
+
+                        <?php if (Yii::$app->user->identity->can('print-receiver-barcode')) : ?>
+                            <?= Html::a('<i class="fa fa-barcode"></i> ' . Yii::t('app', 'print_barcode'), ['print-receiver-barcode'], ['class' => 'btn btn-info btn-margin']) ?>
+                        <?php endif ?>
+                        
+                        <?php if (Yii::$app->user->identity->can('export-barcode-pdf')) : ?>
+                            <?= Html::a('<i class="fa fa-barcode"></i> ' . Yii::t('app', 'print_barcode'), ['export-barcode-pdf'], ['class' => 'btn btn-info btn-margin']) ?>
+                        <?php endif ?>
                     </div>
 
                     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -80,7 +89,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'attribute' => 'receiver_type_id',
                                     'filter' => ArrayHelper::map(ReceiverType::find()->all(), 'id', 'name'),
                                     'value' => function ($model) {
-                                        return $model->receiverType->name;
+                                        return Helpers::relationValue($model, 'receiverType', 'name');
                                     },
                                 ],
 
@@ -91,7 +100,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'attribute' => 'village_id',
                                     'filter' => ArrayHelper::map(Village::find()->all(), 'id', 'name'),
                                     'value' => function ($model) {
-                                        return $model->village->name;
+                                        return Helpers::relationValue($model, 'village', 'name');
                                     },
                                 ],
 
@@ -102,7 +111,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'attribute' => 'citizens_association_id',
                                     'filter' => ArrayHelper::map(CitizensAssociation::find()->all(), 'id', 'name'),
                                     'value' => function ($model) {
-                                        return $model->citizens->name;
+                                        return Helpers::relationValue($model, 'citizens', 'name');
                                     },
                                 ],
                                 [
@@ -112,7 +121,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'attribute' => 'neighborhood_association_id',
                                     'filter' => ArrayHelper::map(NeighborhoodAssociation::find()->all(), 'id', 'name'),
                                     'value' => function ($model) {
-                                        return $model->neighborhood->name;
+                                        return Helpers::relationValue($model, 'neighborhood', 'name');
                                     },
                                 ],
                                 
@@ -214,7 +223,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'attribute' => 'village_id',
                                 'filter' => ArrayHelper::map(Village::find()->all(), 'id', 'name'),
                                 'value' => function ($model) {
-                                    return $model->village->name;
+                                    return Helpers::relationValue($model, 'village', 'name');
                                 },
                             ],
 
@@ -225,7 +234,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'attribute' => 'citizens_association_id',
                                 'filter' => ArrayHelper::map(CitizensAssociation::find()->all(), 'id', 'name'),
                                 'value' => function ($model) {
-                                    return $model->citizens->name;
+                                    return Helpers::relationValue($model, 'citizens', 'name');
                                 },
                             ],
                             [
@@ -235,7 +244,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'attribute' => 'neighborhood_association_id',
                                 'filter' => ArrayHelper::map(NeighborhoodAssociation::find()->all(), 'id', 'name'),
                                 'value' => function ($model) {
-                                    return $model->neighborhood->name;
+                                    return Helpers::relationValue($model, 'neighborhood', 'name');
                                 },
                             ],
                             
@@ -326,7 +335,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'attribute' => 'village_id',
                                 'filter' => ArrayHelper::map(Village::find()->all(), 'id', 'name'),
                                 'value' => function ($model) {
-                                    return $model->village->name;
+                                    return Helpers::relationValue($model, 'village', 'name');
                                 },
                             ],
 
@@ -337,7 +346,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'attribute' => 'citizens_association_id',
                                 'filter' => ArrayHelper::map(CitizensAssociation::find()->all(), 'id', 'name'),
                                 'value' => function ($model) {
-                                    return $model->citizens->name;
+                                    return Helpers::relationValue($model, 'citizens', 'name');
                                 },
                             ],
                             [
@@ -347,7 +356,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'attribute' => 'neighborhood_association_id',
                                 'filter' => ArrayHelper::map(NeighborhoodAssociation::find()->all(), 'id', 'name'),
                                 'value' => function ($model) {
-                                    return $model->neighborhood->name;
+                                    return Helpers::relationValue($model, 'neighborhood', 'name');
                                 },
                             ],
                             

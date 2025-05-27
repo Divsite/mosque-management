@@ -25,6 +25,7 @@ use backend\models\ReceiverOperationalType;
 use backend\models\ReceiverResident;
 use backend\models\Resident;
 use backend\models\User;
+use kartik\mpdf\Pdf;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -192,6 +193,8 @@ class ReceiverController extends Controller
             
             if ($model->receiver_type_id == ReceiverType::SACRIFICE) {
 
+                $isCommittee = Yii::$app->request->post()['Receiver']['is_committee'];
+
                 // generate barcode function
                 for ($x=0; $x < $qty; $x++)
                 {
@@ -209,10 +212,13 @@ class ReceiverController extends Controller
                     $receiver->status = Receiver::NOT_CLAIM;
                     $receiver->status_update = date('Y-m-d H:i:s');
                     $receiver->clock = $model->clock;
+                    $receiver->is_committee = $isCommittee;
                     
-                    $receiver->village_id = $villageVictim;
-                    $receiver->citizens_association_id = $citizenVictim;
-                    $receiver->neighborhood_association_id = $neighborhoodVictim;
+                    if (!$isCommittee) {
+                        $receiver->village_id = $villageVictim;
+                        $receiver->citizens_association_id = $citizenVictim;
+                        $receiver->neighborhood_association_id = $neighborhoodVictim;
+                    }
                     
                     $receiver->save(false);
                 }
@@ -344,7 +350,60 @@ class ReceiverController extends Controller
     }
 
     public function actionPrintReceiverBarcode() {
-        return $this->render('print_receiver_barcode');
+        $receivers = Receiver::find()
+                    ->with(['receiverType', 'branch'])
+                    ->where(['branch_code' => Yii::$app->user->identity->code, 'receiver_type_id' => ReceiverType::SACRIFICE])
+                    ->all();
+
+        return $this->render('print_receiver_barcode', [
+            'receivers' => $receivers
+        ]);
+    }
+
+    public function actionExportBarcodePdf()
+    {
+        $receiver = Receiver::find()
+            ->with(['receiverType', 'branch'])
+            ->where([
+                'branch_code' => Yii::$app->user->identity->code,
+                'receiver_type_id' => ReceiverType::SACRIFICE,
+            ])
+            ->all();
+
+        $content = $this->renderPartial('export_barcode_pdf', [
+            'receiver' => $receiver,
+        ]);
+
+        $cssInline = <<< CSS
+        body {
+            font-family: sans-serif;
+            font-size: 12px;
+        }
+        
+        .barcode-label { 
+            font-size: 14px; 
+            font-weight: bold; 
+            margin-top: 10px; 
+        }
+        CSS;
+
+        $pdf = new Pdf([
+            'mode' => Pdf::MODE_UTF8,
+            'format' => Pdf::FORMAT_A3,
+            'orientation' => Pdf::ORIENT_PORTRAIT,
+            'destination' => Pdf::DEST_BROWSER,
+            'filename' => 'barcode_sacrifice_' . date('Ymd_His') . '.pdf',
+            'content' => $content,
+            'cssInline' => $cssInline,
+            'options' => ['title' => 'Barcode List'],
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            'methods' => [
+                'SetHeader' => [''],
+                'SetFooter' => ['{PAGENO}'],
+            ],
+        ]);
+
+        return $pdf->render();
     }
 
     public function actionEditCouponStatus($id, $status)

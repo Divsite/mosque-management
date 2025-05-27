@@ -165,58 +165,65 @@ use backend\models\Village;
         <?= Html::label(Yii::t('app', 'qty'),['class' => 'control-label']) ?>
         <input type="text" class="form-control" name="qty" id="qty" placeholder="<?= Yii::t('app', 'qty') ?>" value="<?= Yii::$app->request->get('qty')?>">
 
-        <?= $form->field($model, 'village_id[victim]')->widget(Select2::classname(), [
-                'data' => ArrayHelper::map(Village::find()->all(), 'id', 'name'),
-                'options' => [
-                    'placeholder' => Yii::t('app', 'select_village'),
-                    'onChange' => '$.post("'.Url::base().'/reff/citizens?id='.'" + $(this).val(), function(data) {
-                            what = JSON.parse(data);
-                            $("#receiver-citizens_association_id-victim").html(what.citizens);
-                            $("#receiver-neighborhood_association_id-victim").html(what.neighborhood);
-                            $("#receiver-resident_id").html(what.resident);
-                        }
-                    );',
-                ],
-                'pluginOptions' => [
-                    'allowClear' => false
-                ],
-            ]);
-        ?>
+        <?= $form->field($model, 'is_committee')->checkbox([
+            'label' => Yii::t('app', 'receiver_is_committee'),
+            'id' => 'is-committee-flag',
+        ]); ?>
 
-        <?= $form->field($model, 'citizens_association_id[victim]')->widget(Select2::classname(), [
-                'data' => null,
-                'options' => [
-                    'placeholder' => Yii::t('app', 'select_citizens_asociation'),
-                    'onChange' => '$.post("'.Url::base().'/reff/neighborhood?id='.'" + $(this).val(), function(data) {
-                            what = JSON.parse(data);
-                            $("#receiver-neighborhood_association_id-victim").html(what.neighborhood);
-                            $("#receiver-resident_id").html(what.resident);
-                        }
-                    );',
-                ],
-                'pluginOptions' => [
-                    'allowClear' => false
-                ],
-            ]);
-        ?>
+        <div id="location-fields">
+            <?= $form->field($model, 'village_id[victim]')->widget(Select2::classname(), [
+                    'data' => ArrayHelper::map(Village::find()->all(), 'id', 'name'),
+                    'options' => [
+                        'placeholder' => Yii::t('app', 'select_village'),
+                        'onChange' => '$.post("'.Url::base().'/reff/citizens?id='.'" + $(this).val(), function(data) {
+                                what = JSON.parse(data);
+                                $("#receiver-citizens_association_id-victim").html(what.citizens);
+                                $("#receiver-neighborhood_association_id-victim").html(what.neighborhood);
+                                $("#receiver-resident_id").html(what.resident);
+                            }
+                        );',
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => false
+                    ],
+                ]);
+            ?>
 
-        <?= $form->field($model, 'neighborhood_association_id[victim]')->widget(Select2::classname(), [
-                'data' => null,
-                'options' => [
-                    'placeholder' => Yii::t('app', 'select_neighborhood_association'),
-                    'onChange' => '$.post("'.Url::base().'/reff/resident?neighborhood='.'" + $(this).val()
-                        + "&citizen=" + $("#receiver-citizens_association_id-victim").val()
-                        + "&village=" + $("#receiver-village_id-victim").val(), function(data) {
-                        what = JSON.parse(data);
-                        console.log(what);
-                        $("#receiver-resident_id").html(what.resident);
-                    });',
-                ],
-                'pluginOptions' => [
-                    'allowClear' => false
-                ],
-            ]);
-        ?>
+            <?= $form->field($model, 'citizens_association_id[victim]')->widget(Select2::classname(), [
+                    'data' => null,
+                    'options' => [
+                        'placeholder' => Yii::t('app', 'select_citizens_asociation'),
+                        'onChange' => '$.post("'.Url::base().'/reff/neighborhood?id='.'" + $(this).val(), function(data) {
+                                what = JSON.parse(data);
+                                $("#receiver-neighborhood_association_id-victim").html(what.neighborhood);
+                                $("#receiver-resident_id").html(what.resident);
+                            }
+                        );',
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => false
+                    ],
+                ]);
+            ?>
+
+            <?= $form->field($model, 'neighborhood_association_id[victim]')->widget(Select2::classname(), [
+                    'data' => null,
+                    'options' => [
+                        'placeholder' => Yii::t('app', 'select_neighborhood_association'),
+                        'onChange' => '$.post("'.Url::base().'/reff/resident?neighborhood='.'" + $(this).val()
+                            + "&citizen=" + $("#receiver-citizens_association_id-victim").val()
+                            + "&village=" + $("#receiver-village_id-victim").val(), function(data) {
+                            what = JSON.parse(data);
+                            console.log(what);
+                            $("#receiver-resident_id").html(what.resident);
+                        });',
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => false
+                    ],
+                ]);
+            ?>
+        </div>
 
         <?= $form->field($model, 'clock')->widget(TimePicker::classname(), [
             'options' => ['placeholder' => Yii::t('app', 'select_time')],
@@ -283,6 +290,20 @@ function resetCharityTypeForm() {
 function resetValidation(fieldSelector) {
     $(fieldSelector).prop('required', false);
 }
+
+function toggleLocationFields() {
+    if ($('#is-committee-flag').is(':checked')) {
+        $('#location-fields').hide();
+    } else {
+        $('#location-fields').show();
+    }
+}
+
+$('#is-committee-flag').change(function() {
+    toggleLocationFields();
+});
+
+toggleLocationFields(); // initial check
 
 JS;
 
