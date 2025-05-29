@@ -95,7 +95,7 @@ $("#enter").click(function() {
                         title: "Success!",
                         text: response.message,
                         icon: "success",
-                        timer: 3000,
+                        timer: 10000,
                     });
 
                     if (isAndroid()) {
